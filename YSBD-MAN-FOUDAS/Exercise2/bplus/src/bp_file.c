@@ -8,6 +8,7 @@
 #include <bp_datanode.h>
 #include <stdbool.h>
 
+#define MAX_OPEN_FILES 20
 #define CALL_BF(call)         \
   {                           \
     BF_ErrorCode code = call; \
@@ -19,10 +20,34 @@
   }
 
 
+static BPLUS_INFO *open_files[MAX_OPEN_FILES] = {NULL};
 
+int find_empty_slot(){
+  for (int i = 0; i < MAX_OPEN_FILES; i++){
+    if(open_files[i] == NULL){
+      return i;
+    }
+  }
+  return -1;
+}
 
 int BP_CreateFile(char *fileName)
 {
+  int file_desc;
+  CALL_BF(BF_OpenFile(fileName, &file_desc));
+  BF_Block* block;
+  BF_Block_Init(&block);
+  CALL_BF(BF_AllocateBlock(file_desc, block));
+
+  char* data = BF_Block_GetData(block);
+  BPLUS_INFO metadata = {.file_desc = file_desc, .root_block = -1, .tree_height = 0};
+  memcpy(data, &metadata, sizeof(BPLUS_INFO));
+
+  BF_Block_SetDirty(block);
+  CALL_BF(BF_UnpinBlock(block));
+  BF_Block_Destroy(&block);
+  CALL_BF(BF_CloseFile(file_desc));
+
   return 0;
 }
 
@@ -34,6 +59,14 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc)
 
 int BP_CloseFile(int file_desc,BPLUS_INFO* info)
 {  
+  for (int j = 0; j < MAX_OPEN_FILES; j++){
+    if(open_files[j] == info){
+      open_files[j] = NULL;
+      break;
+    }
+  }
+  free(info);
+  CALL_BF(BF_CloseFile(file_desc));
   return 0;
 }
 

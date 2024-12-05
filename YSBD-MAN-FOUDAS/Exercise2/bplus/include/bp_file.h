@@ -3,10 +3,12 @@
 #include <record.h>
 #include <stdbool.h>
 
-
+#define bplus_ERROR -1
 
 typedef struct {
- 
+    int root_block;
+    int tree_height;
+    int file_desc;
 } BPLUS_INFO;
 
 
