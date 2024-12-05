@@ -54,7 +54,41 @@ int BP_CreateFile(char *fileName)
 
 BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc)
 {
-  return 0;
+  CALL_BF(BF_OpenFile(fileName, file_desc));
+
+  BF_Block* block;
+  BF_Block_Init(&block);
+
+  CALL_BF(BF_GetBlock(&file_desc, 0, block));
+
+  char* data = BF_Block_GetData(block);
+  BPLUS_INFO tmpInfo; //instead of malloc
+  BPLUS_INFO* info = &tmpInfo;
+
+  if(info == NULL){
+    BF_UnpinBlock(block);
+    BF_Block_Destroy(&block);
+    CALL_BF(BF_CloseFile(&file_desc);)
+
+    return NULL;
+  }
+
+  memcpy(info, data, sizeof(BPLUS_INFO));
+  BF_UnpinBlock(block);
+  BF_Block_Destroy(&block);
+
+  int slot = find_empty_slot();
+  if (slot == -1){
+    //no available slot found
+    free(info);
+    CALL_BF(BF_CloseFile(&file_desc));
+    return NULL;
+  }
+
+  open_files[slot] = info;
+
+
+  return info;
 }
 
 int BP_CloseFile(int file_desc,BPLUS_INFO* info)
@@ -80,4 +114,3 @@ int BP_GetEntry(int file_desc,BPLUS_INFO *bplus_info, int value,Record** record)
   *record=NULL;
   return 0;
 }
-
