@@ -24,7 +24,7 @@ int insert(BF_Block *block, Record *rec, bool split){
     for(int i =0 ; i< node->recCount; i++){
         if(node->recs[i].id == rec->id){
             printf("Record with id: %d already exists....Declined", rec->id);
-            return -1; //yparxei hdh opote de ginete na 
+            return -1; //yparxei hdh opote de ginete na ksanaginei insert k na yparxei diplotypo
         }
     }
 
@@ -34,11 +34,13 @@ int insert(BF_Block *block, Record *rec, bool split){
         node->recs[j+1] = node->recs[j];
         j--;
     }
-    node->recs[j+1] = *rec;
-    node->recCount++;
+    node->recs[j+1] = *rec; // efoson to epitrepomeno orio records ana node den paraviazete
+                            // h eggrafh bainei sth thesh j+1 opou j h teleftea 'nomimh' thesh 
+                            // opou yparxei egrafh
+    node->recCount++;   // ananewnete to counter gia toys epomenous elegxous diathesimothtas xwrou me vash to max_number_recs
 
     if(node->recCount > MAX_RECS){
-        split = true;
+        split = true;       // an den yparxei xwros gia nea eggrafh tote h metavlhth split pernei timh true
     }
     return 0;
 }
@@ -63,5 +65,21 @@ int split_data(BF_Block *block, BF_Block *newblock, Record *rec){
 }
 
 int search_record(BF_Block *block, int id, Record **result){
-    // to be doneeeeeeeeeeee
+    char* data = BF_Block_GetData(block);
+    DataNode* node = (DataNode*) data;  // pernaei ta data apo to block sth metablhth data k meta sto node 
+                                        // pou einai type Datanode gia na mporei na exei prosvash sta antikeimena t struct
+                                        // gia kathe eggrafh kai na diaxeirizetai tis plirofories ths gia to current node
+
+    for(int i = 0; i < node->recCount; i++){
+        if(node->recs[i].id == id){ // an brethei h eggrafh pou psaxnoume me record->id == id
+            *result = &node->recs[i];   // pernate h diefthinsh ths ston deikth result kai aytos me th seira tou
+                                        // tha xrhshmopoieithei sthn sunarthsh BPLUS_GET_ENTRY opou ths epistrafei
+                                        // to periexomeno ths egrafhs auths 
+            return 0;
+        }
+    }
+
+    *result = NULL; // an de vrethei h eggrafh tote to result pernei thn timh null kai
+                    // h sunarthsh GET_ENTRY epistrefei null
+    return -1;
 }
