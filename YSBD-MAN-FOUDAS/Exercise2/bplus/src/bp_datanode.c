@@ -5,9 +5,7 @@
 #include "bf.h"
 #include "bp_file.h"
 #include "record.h"
-
-#define MAX_RECS 2  // opos sto paradeigma sto power point
-
+#include "bp_datanode.h"
 
 /* mesa sto file auto periexontai sinarthseis pou diaxeirizontai tous kombous fylla enos bplus tree, oi  opoioi komvoi einai 
     sthn ousia komvoi dedomenon(opos anaferetai k sth theoria). Oi sinartiseis autes aforoun basikes leitoyrgies pano se komvous
@@ -16,12 +14,6 @@
     eggrafwn(counter),enan deikth se epomeno block kai enan pinaka me tis eggrafes pou briskontai mesa sto current block(node), 
     o opoios exei statiko megethos kai iso me MAX_RECORDS */
 
-typedef struct DataNode
-{
-    int nextBlock;  // pointer
-    int recCount;
-    Record recs[MAX_RECS];
-}DataNode;
 
 
 int initializeDataNode(DataNode* node){

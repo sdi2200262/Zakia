@@ -100,14 +100,14 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc)
   }
 
 
-  else:
+  else{
     open_files[slot] = info;
   
   //dld an uparxei free slot den kanoume BF_CloseFile()???
   //CALL_BF(BF_CloseFile(&file_desc))
 
   //edo to info ine adeio den uparxei anathesi
-  return info;
+  return info;}
 }
 
 
