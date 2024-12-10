@@ -4,17 +4,19 @@
 // Structure to store B+ tree file metadata
 typedef struct {
     char filename[255];    // Filename of the B+ tree file
-    int root_block;        // Block number of the root node
+    int root_block_data;        // Block number of the root node
     int height;            // Height of the B+ tree
     int total_records;     // Total number of records in the tree
 } BPLUS_INFO;
 
+/*
 // Record structure (assuming this is defined elsewhere or in another header)
 typedef struct {
     int id;                // Primary key
     char name[64];         // Example additional field
     // Add other fields as needed
 } Record;
+*/
 
 // Function prototypes for B+ tree file operations
 

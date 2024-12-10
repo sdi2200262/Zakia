@@ -9,6 +9,17 @@
 
 // Global array to track open files
 #define MAXOPENFILES 20
+#define CALL_BF(call)         \
+  {                           \
+    BF_ErrorCode code = call; \
+    if (code != BF_OK)        \
+    {                         \
+      BF_PrintError(code);    \
+      return bplus_ERROR;     \
+    }                         \
+  }
+
+
 typedef struct {
     int is_open;
     int file_desc;
@@ -20,15 +31,17 @@ static OpenFileEntry open_files[MAXOPENFILES];
 
 // Initialize open files array
 void initOpenFilesArray() {
-    static int initialized = 0;
+    
+    static int initialized = 0;     //check an ine already initialized
+
     if (!initialized) {
         for (int i = 0; i < MAXOPENFILES; i++) {
-            open_files[i].is_open = 0;
-            open_files[i].file_desc = -1;
+            open_files[i].is_open = 0;      //set slot open
+            open_files[i].file_desc = -1;       //
             open_files[i].filename[0] = '\0';
             open_files[i].info = NULL;
         }
-        initialized = 1;
+        initialized = 1;        //mark as initialized
     }
 }
 
@@ -43,60 +56,56 @@ int findFreeFileSlot() {
     return -1;
 }
 
+
 // BP_CreateFile implementation
 int BP_CreateFile(char *fileName) {
+
+    //arxikopoiise to array me ta openfiles
     initOpenFilesArray();
-    
+
+
     // Try to create the file using BF level
     int file_desc;
     BF_Block *block;
+    
+    CALL_BF(BF_CreateFile(fileName)); 
+    
+    CALL_BF(BF_OpenFile(fileName,&file_desc));
+
     BF_Block_Init(&block);
     
-    if (BF_CreateFile(fileName) != BF_OK) {
-        BF_Block_Destroy(&block);
-        return -1;
-    }
+    CALL_BF(BF_AllocateBlock(file_desc, block));
+
     
-    // Open the file
-    if (BF_OpenFile(fileName, &file_desc) != BF_OK) {
-        BF_Block_Destroy(&block);
-        return -1;
-    }
-    
-    // Allocate first block for metadata
-    if (BF_AllocateBlock(file_desc, block) != BF_OK) {
-        BF_CloseFile(file_desc);
-        BF_Block_Destroy(&block);
-        return -1;
-    }
-    
-    // Initialize metadata in first block
+    // arxikopoiei ta metadedomena sto block 
     BPLUS_INFO* bplus_info = (BPLUS_INFO*)BF_Block_GetData(block);
     strcpy(bplus_info->filename, fileName);
-    bplus_info->root_block = -1;  // No root yet
-    bplus_info->height = 0;
-    bplus_info->total_records = 0;
+    bplus_info->root_block_data = -1;    // den iparxi riza akoma
+    bplus_info->height = 0;         // to dedro ine adeio
+    bplus_info->total_records = 0;  
     
-    // Mark block as dirty and unpin
+    // theto to block os dirty kai kano unpin
     BF_Block_SetDirty(block);
-    BF_UnpinBlock(block);
+    CALL_BF(BF_UnpinBlock(block));
     
-    // Close the file
-    BF_CloseFile(file_desc);
-    BF_Block_Destroy(&block);
+    // kleise to fakelo
+    CALL_BF(BF_CloseFile(file_desc));
+    BF_Close();
+    //den imaste sigouroi an thelei destroy
+    //BF_Block_Destroy(&block);
     
     return 0;
 }
 
 // BP_OpenFile implementation
 BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
+    
     initOpenFilesArray();
     
     // Open file at BF level
-    if (BF_OpenFile(fileName, file_desc) != BF_OK) {
-        return NULL;
-    }
-    
+    CALL_BF(BF_OpenFile(filename, file_desc));
+
+
     // Find a free slot in open files array
     int slot = findFreeFileSlot();
     if (slot == -1) {
@@ -107,31 +116,33 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     // Read first block (metadata)
     BF_Block *block;
     BF_Block_Init(&block);
-    if (BF_GetBlock(*file_desc, 0, block) != BF_OK) {
-        BF_CloseFile(*file_desc);
-        BF_Block_Destroy(&block);
-        return NULL;
-    }
+    CALL_BF(BF_GetBlock(*file_desc,0,block));
     
     // Copy metadata
     BPLUS_INFO* bplus_info = malloc(sizeof(BPLUS_INFO));
     memcpy(bplus_info, BF_Block_GetData(block), sizeof(BPLUS_INFO));
     
     // Update open files array
-    open_files[slot].is_open = 1;
-    open_files[slot].file_desc = *file_desc;
-    strcpy(open_files[slot].filename, fileName);
-    open_files[slot].info = bplus_info;
+    open_files[slot].is_open = 1;       //kleise auto to slot
+    open_files[slot].file_desc = *file_desc;    // update file_desc
+    strcpy(open_files[slot].filename, fileName);    // update fileName
+    open_files[slot].info = bplus_info;     // update ta metadata
     
     // Unpin block
     BF_UnpinBlock(block);
-    BF_Block_Destroy(&block);
+    //BF_Block_Destroy(&block);
+
+    printf("\nCalled OpenFile for %d here is the OpenFiles Array:\n", file_desc);
+    for (int i=0; i <MAXOPENFILES; i++ ){
+        printf("keli  %d: %d , %d , %s , kai bplus info\n"i , open_files[i].is_open, open_files[i].file_desc, open_files[i].filename);
+    }
     
     return bplus_info;
 }
 
 // BP_CloseFile implementation
 int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
+    
     // Find the file in open files array
     int slot = -1;
     for (int i = 0; i < MAXOPENFILES; i++) {
@@ -141,14 +152,15 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
         }
     }
     
+    // to file den itan anoixto h de brethike
     if (slot == -1) {
+        printf("\nClose File returned -1\n
+                File is already closed or doesnt exist\n")
         return -1;
     }
     
     // Close file at BF level
-    if (BF_CloseFile(file_desc) != BF_OK) {
-        return -1;
-    }
+    CALL_BF(BF_CloseFile(file_desc));
     
     // Free metadata and reset slot
     free(open_files[slot].info);
@@ -157,32 +169,40 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     open_files[slot].filename[0] = '\0';
     open_files[slot].info = NULL;
     
+
+    printf("\nCalled CloseFile for %d here is the OpenFiles Array:\n", file_desc);
+    for (int i=0; i <MAXOPENFILES; i++ ){
+        printf("keli  %d: %d , %d , %s , kai bplus info\n"i , open_files[i].is_open, open_files[i].file_desc, open_files[i].filename);
+    }
     return 0;
 }
 
+
+
 // BP_InsertEntry implementation
 int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
+    
     BF_Block *block;
+    
     BF_Block_Init(&block);
     
-    // If no root, create first data node as root
-    if (bplus_info->root_block == -1) {
-        if (BF_AllocateBlock(file_desc, block) != BF_OK) {
-            BF_Block_Destroy(&block);
-            return -1;
-        }
+    // tsekaroume an ine to proto entry dld an exei riza
+    if (bplus_info->root_block_data == -1) {
         
-        // Initialize as data node
+        // desmeuoume xoro gia tin riza
+        CALL_BF(BF_AllocateBlock(file_desc, &block));
+        
+        // arxikopoiisi datanode
         initializeDataNode(block);
         
-        // Insert record
+        // eisagoume to neo record
         if (insertRecordToDataNode(block, record) != 0) {
             BF_Block_Destroy(&block);
             return -1;
         }
         
         // Update B+ tree metadata
-        bplus_info->root_block = BF_GetBlockNum(block);
+        bplus_info->root_block_data = CALL_BF(BF_Block_GetData(block));     //root_block = BF_getblocknum(block)
         bplus_info->height = 1;
         bplus_info->total_records = 1;
         
@@ -231,6 +251,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     
     return current_block;
 }
+
+
 
 // BP_GetEntry implementation
 int BP_GetEntry(int file_desc, BPLUS_INFO* header_info, int id, Record** result) {
