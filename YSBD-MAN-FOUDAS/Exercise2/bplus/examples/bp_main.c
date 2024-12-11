@@ -29,7 +29,7 @@ int main()
 
   
   insertEntries();
-  findEntries();
+  //findEntries();
 
   ////////////////////////////////////////////////
   
@@ -41,15 +41,19 @@ void insertEntries(){
   int file_desc;
   BPLUS_INFO* info = BP_OpenFile(FILE_NAME, &file_desc);
   Record record;
+  /*
   for (int i = 0; i < RECORDS_NUM; i++)
   {
     record = randomRecord();
     BP_InsertEntry(file_desc,info, record);
   }
+  */
+  record = randomRecord();
+  BP_InsertEntry(file_desc,info,record);
   BP_CloseFile(file_desc,info);
   BF_Close();
 }
-
+/*
 void findEntries(){
   int file_desc;
   BPLUS_INFO* info;
@@ -69,3 +73,4 @@ void findEntries(){
   BP_CloseFile(file_desc,info);
   BF_Close();
 }
+*/
