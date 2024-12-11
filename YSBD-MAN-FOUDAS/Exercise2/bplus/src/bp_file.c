@@ -189,11 +189,14 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     CALL_BF(BF_AllocateBlock(file_desc, block));
 
-    if (init_DataNode(block)){
+    if (init_DataNode(block)==0){
         printf("\n init data node workds!");
         printf("\n record is: %d\n", record.id);
 
     }
+
+    BF_Block_SetDirty(block);
+    BF_UnpinBlock(block);
 
     return 0;
 }
