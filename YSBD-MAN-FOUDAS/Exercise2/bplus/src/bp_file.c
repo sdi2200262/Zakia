@@ -84,7 +84,7 @@ int BP_CreateFile(char *fileName) {
     //arxikopoioume ta metadedomena tou bplus dedrou
     bplus_info->tree_height = -1;         // to dedro ine adeio - den uparxei riza
     bplus_info->file_desc = 0;  
-    bplus_info->record_counter = 0;
+    bplus_info->total_record_counter = 0;
 
     // theto to block os dirty kai kano unpin
     BF_Block_SetDirty(block);
@@ -95,6 +95,7 @@ int BP_CreateFile(char *fileName) {
     BF_Close();
     //den imaste sigouroi an thelei destroy
     //BF_Block_Destroy(&block);
+    printf("\nCreated file (BP_CreateFile works)\n");
     
     return 0;
 }
@@ -134,10 +135,8 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     BF_UnpinBlock(block);
     //BF_Block_Destroy(&block);
 
-    printf("\nCalled OpenFile for %d here is the OpenFiles Array:\n", *file_desc);
-    for (int i=0; i <MAXOPENFILES; i++ ){
-        printf("keli  %d: %d , %d , %s , kai bplus info\n",i , open_files[i].is_open, open_files[i].file_desc, open_files[i].filename);
-    }
+    printf("\nOpened file (BP_OpenFile works)\n");
+    
     
     return bplus_info;
 }
@@ -171,10 +170,8 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     open_files[slot].info = NULL;
     
 
-    printf("\nCalled CloseFile for %d here is the OpenFiles Array:\n", file_desc);
-    for (int i=0; i <MAXOPENFILES; i++ ){
-        printf("keli  %d: %d , %d , %s , kai bplus info\n",i , open_files[i].is_open, open_files[i].file_desc, open_files[i].filename);
-    }
+    printf("\nClosed File (BP_CloseFile works\n");
+    
     return 0;
 }
 
@@ -183,22 +180,22 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
 // BP_InsertEntry implementation
 int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     
-    BF_Block *block;
-    
+    BF_Block* block;
+        
     BF_Block_Init(&block);
 
     CALL_BF(BF_AllocateBlock(file_desc, block));
 
-    if (init_DataNode(block)==0){
-        printf("\n init data node workds!");
-        printf("\n record is: %d\n", record.id);
-
+    if(insert_DataNode(block, bplus_info, &record)==0){
+        printf("\n Node insertion complete!\n");
     }
+
 
     BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
 
     return 0;
+    
 }
     /*
     // tsekaroume an ine to proto entry dld an exei riza

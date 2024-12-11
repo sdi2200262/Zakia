@@ -1,6 +1,6 @@
 #ifndef BP_FILE_H
 #define BP_FILE_H
-#include <record.h>
+#include "record.h"
 #include <stdbool.h>
 
 #define bplus_ERROR -1
@@ -9,7 +9,7 @@ typedef struct {
     //int root_block;
     int tree_height;
     int file_desc;
-    int record_counter;
+    int total_record_counter;
 } BPLUS_INFO;
 
 
