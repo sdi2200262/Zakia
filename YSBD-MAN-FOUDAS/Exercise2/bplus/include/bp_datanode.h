@@ -20,7 +20,7 @@ typedef struct DataNode
 
 int init_DataNode(BF_Block* block);
 void set_parent_id( BF_Block* block ,int id);
-int insert_DataNode( BF_BLOCK* block ,Record *rec);
+int insert_DataNode( BF_Block* block ,Record *rec);
 //int split_data(BF_Block *block, BF_Block *newblock, Record *rec);
 //int search_record(BF_Block *block, int id, Record **result);
 
