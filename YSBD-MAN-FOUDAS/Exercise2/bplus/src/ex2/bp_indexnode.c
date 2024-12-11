@@ -18,6 +18,7 @@ typedef struct {
     int child_block_ids[MAX_INDEX_KEYS + 1];  // Array of child block IDs
 } IndexNode;
 
+
 // Function to initialize an index node
 int initializeIndexNode(BF_Block* block) {
     IndexNode* index_node = (IndexNode*)BF_Block_GetData(block);

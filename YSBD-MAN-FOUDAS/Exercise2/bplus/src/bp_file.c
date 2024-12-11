@@ -180,92 +180,81 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
 // BP_InsertEntry implementation
 int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     
-    BF_Block* block;
+    // periptosi pou to dedro ine adeio kai den uparxei riza
+    if (bplus_info->tree_height==-1){
+
+        BF_Block* block;
         
-    BF_Block_Init(&block);
+        BF_Block_Init(&block);
 
-    CALL_BF(BF_AllocateBlock(file_desc, block));
+        CALL_BF(BF_AllocateBlock(file_desc, block));
 
-    if(insert_DataNode(block, bplus_info, &record)==0){
-        printf("\n Node insertion complete!\n");
-    }
+        printf("\nAdeio tree - bazoume riza\n");
 
-
-    BF_Block_SetDirty(block);
-    BF_UnpinBlock(block);
-
-    return 0;
-    
-}
-    /*
-    // tsekaroume an ine to proto entry dld an exei riza
-    if (bplus_info->tree_hight == -1) {
-        
-        // desmeuoume xoro gia tin riza
-        CALL_BF(BF_AllocateBlock(file_desc, &block));
-        
-        // arxikopoiisi datanode
-        initializeDataNode(block);
-        
-        // eisagoume to neo record
-        if (insertRecordToDataNode(block, record) != 0) {
-            BF_Block_Destroy(&block);
-            return -1;
+        if (init_DataNode(block)==0){
+            printf("\n init data node workds!");
         }
-        
-        // Update B+ tree metadata
-        bplus_info->root_block_data = CALL_BF(BF_Block_GetData(block));     //root_block = BF_getblocknum(block)
-        bplus_info->height = 1;
-        bplus_info->total_records = 1;
-        
-        // Mark block dirty and unpin
+
+        if(insert_DataNode(block, &record) == 0){
+            printf("\nInsert doulepse\n");
+
+        }
+
+        //update bplus info
+        bplus_info->root = BF_Block_GetData(block);  //apothikevoume to block id sto opoio ine to root
+        bplus_info->tree_height=1;
+        bplus_info->total_record_counter++;      
+
         BF_Block_SetDirty(block);
         BF_UnpinBlock(block);
+
+        return block;  
+    }
+
+    //upoloipes periptoseis
+    BF_Block* block;
+    BF_Block_Init(&block);
+
+   
+    //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
+    //eisagogi eggrafis
+    int curr_node = bplus_info->root;
+    int curr_level=0;
+
+    //perase apo olous tous index nodes sto sosto path
+    while(level< bplus_info->tree_height -1){
         
-        return bplus_info->root_block;
-    }
-    
-    // Traverse to find appropriate leaf node
-    int current_block = bplus_info->root_block;
-    int level = 0;
-    
-    while (level < bplus_info->height - 1) {
-        if (BF_GetBlock(file_desc, current_block, block) != BF_OK) {
-            BF_Block_Destroy(&block);
-            return -1;
-        }
+        //bres pointer gia curr node
+        BF_GetBlock(file_desc, curr_node, block);
+
+        //bres to sosto path gia to epomeno node kai kane update to curr node
+        curr_node = find_path(block,record);
         
-        // Find child block for this key
-        current_block = findChildBlockId(block, record.id);
+        //unpin unused block
         BF_UnpinBlock(block);
-        level++;
+        curr_level++;
     }
-    
-    // At leaf level, get block
-    if (BF_GetBlock(file_desc, current_block, block) != BF_OK) {
-        BF_Block_Destroy(&block);
-        return -1;
+
+
+    //otan ftasoume se node fullo pare pointer gia to block
+    BF_GetBlock(file_desc, curr_node, block);
+
+    //kai kane insert sto leaf node to key
+    if(insert_DataNode(block, &record) == 0){
+        printf("\nInsert doulepse\n");
     }
-    
-    // Insert record
-    if (insertRecordToDataNode(block, record) != 0) {
-        BF_UnpinBlock(block);
-        BF_Block_Destroy(&block);
-        return -1;  // Duplicate key or node full
-    }
-    
-    // Update metadata
-    bplus_info->total_records++;
-    
-    // Mark block dirty and unpin
+
+    bplus_info->total_record_counter++;
+
     BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
-    
-    return current_block;
+
+    return curr_node;
     
 }
+    
 
-
+/*
 // BP_GetEntry implementation
 int BP_GetEntry(int file_desc, BPLUS_INFO* header_info, int id, Record** result) {
     // Start from root block

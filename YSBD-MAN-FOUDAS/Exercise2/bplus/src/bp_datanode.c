@@ -23,6 +23,8 @@ int init_DataNode(BF_Block* block){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
 
     node->next_block_ptr = -1;    //arxikopoioume ton deikti gia to epomeno block
+    node->parent_block_id = -1;
+    node->record_counter=0;    
     for (int i = 0; i <MAX_RECORDS; i++){      //arxikopoioume ton pinaka me ta records
         node->recs[i].id = -1;
         /*node->recs[i].name = 'x';
@@ -35,29 +37,37 @@ int init_DataNode(BF_Block* block){
     return 0;
 }
 
-int insert_DataNode(BF_Block *block, BPLUS_INFO* bplus_info ,Record *rec){
+int insert_DataNode(BF_Block* block ,Record *rec){
+    
+    DataNode* node = (DataNode*)BF_Block_GetData(block);
 
-    //periptosi pou den exei riza
-    if (bplus_info->tree_height==-1){
-        
-        printf("\nAdeio tree - bazoume riza\n");
-
-        if (init_DataNode(block)==0){
-            printf("\n init data node workds!");
-        }
-
-        //insert first record to block
-        DataNode* node = (DataNode*)BF_Block_GetData(block);
-        node->next_block_ptr = -1;
-        node->recs[0] = *rec;
-        node->record_counter++;
-
-
-        //update bplus info
-        bplus_info->tree_height=0;
-        bplus_info->total_record_counter++;        
+    if ( node->record_counter>=MAX_RECORDS){
+        //epistrefoume MAXRECORDS gia na kanei to splitting h BP_INSERT
+        return MAX_RECORDS;
     }
 
+    //tsekaroume gia diples eggrafes
+    for (int i=0; i< node->record_counter;i++){
+        //an to record id eisodou einai idio me kapoio apo ta keys tote ban
+        if(node->recs[i]->id == rec.id){
+            printf("Duplicate key found %d", rec.id);
+            return -1;
+        }
+    }
+
+    // elegxoume se poia thesi tha baloume to neo record
+    int i;
+    // pame stin teleutaia thesi eggrafis kai tsekaroume an einai megaliteri apo to record
+    // pou theloume na eisagoume
+    // an einai tote ta kanoume swap kai auti i diadikasia ginetai mexri na min isxuei to condition
+    // etsi diateiroume auskousa seira ton records sto datanode
+    for (i = node->record_counter; i > 0 && node->recs[i-1].id > rec.id; i--) {
+        node->recs[i] = node->recs[i-1];
+    }
+    
+    // eisagoume to neo record
+    node->recs[i] = rec;
+    node->record_counter++;
 
     return 0;
 }

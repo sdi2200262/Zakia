@@ -49,8 +49,14 @@ void insertEntries(){
     BP_InsertEntry(file_desc,info, record);
   }
   */
+  //bazume riza 
   record = randomRecord();
   BP_InsertEntry(file_desc,info,record);
+
+  //bazoume deftero record
+  record = randomRecord();
+  BP_InsertEntry(file_desc,info,record);
+
   BP_CloseFile(file_desc,info);
   BF_Close();
 }

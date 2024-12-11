@@ -7,9 +7,10 @@
 
 typedef struct {
     //int root_block;
+    int root;
     int tree_height;
-    int file_desc;
     int total_record_counter;
+    int file_desc;
 } BPLUS_INFO;
 
 
