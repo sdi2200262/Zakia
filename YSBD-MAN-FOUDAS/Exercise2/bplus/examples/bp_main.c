@@ -6,6 +6,7 @@
 #include "bp_file.h"
 #include "bp_datanode.h"
 #include "bp_indexnode.h"
+#include "record.h"
 
 #define RECORDS_NUM 200 // you can change it if you want
 #define FILE_NAME "data.db"
