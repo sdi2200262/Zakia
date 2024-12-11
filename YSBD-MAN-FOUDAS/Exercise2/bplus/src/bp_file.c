@@ -185,31 +185,35 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         BF_Block* block;
         
-        BF_Block_Init(&block);
+        BF_Block_Init(&block);      
 
-        CALL_BF(BF_AllocateBlock(file_desc, block));
+        CALL_BF(BF_AllocateBlock(file_desc, block));    
 
         printf("\nAdeio tree - bazoume riza\n");
 
-        if (init_DataNode(block)==0){
+        //ine o protos kombos tou dedrou ara tha ine mono enas datanode
+        if (init_DataNode(block)==0){               
             printf("\n init data node workds!");
         }
 
+        //bazume to record sto data node
         if(insert_DataNode(block, &record) == 0){
             printf("\nInsert doulepse\n");
 
         }
 
         //update bplus info
-        bplus_info->root = BF_Block_GetData(block);  //apothikevoume to block id sto opoio ine to root
-        bplus_info->tree_height=1;
-        bplus_info->total_record_counter++;      
+        bplus_info->root = (int)BF_Block_GetData(block);  //apothikevoume to block id sto opoio ine to root
+        bplus_info->tree_height=1;                        //kanoume update to tree hight
+        bplus_info->total_record_counter++;               //auksanoume to total record  counter
 
+        //kaname allages sto block ara set dirty kai unpin gia na graftei sto disko
         BF_Block_SetDirty(block);
         BF_UnpinBlock(block);
 
         return block;  
     }
+
 
     //upoloipes periptoseis
     BF_Block* block;
@@ -222,10 +226,15 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     int curr_level=0;
 
     //perase apo olous tous index nodes sto sosto path
-    while(level< bplus_info->tree_height -1){
+    while(curr_level < bplus_info->tree_height -1){
         
         //bres pointer gia curr node
         BF_GetBlock(file_desc, curr_node, block);
+
+        if(curr_level == bplus_info->tree_height-1 ){
+            int id = (int)BF_Block_GetData(block);
+            set_parent_id(block, id);
+        }
 
         //bres to sosto path gia to epomeno node kai kane update to curr node
         curr_node = find_path(block,record);
@@ -242,6 +251,10 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     //kai kane insert sto leaf node to key
     if(insert_DataNode(block, &record) == 0){
         printf("\nInsert doulepse\n");
+    }
+    
+    if(insert_DataNode(block, &record == MAX_RECORDS)){
+        //splitarisma
     }
 
     bplus_info->total_record_counter++;

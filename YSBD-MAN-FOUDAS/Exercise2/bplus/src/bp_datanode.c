@@ -22,6 +22,7 @@ int init_DataNode(BF_Block* block){
 
     DataNode* node = (DataNode*)BF_Block_GetData(block);
 
+    node->id = (int)BF_Block_GetData(block);    //pairnoume ena block id
     node->next_block_ptr = -1;    //arxikopoioume ton deikti gia to epomeno block
     node->parent_block_id = -1;
     node->record_counter=0;    
@@ -32,9 +33,16 @@ int init_DataNode(BF_Block* block){
         node->recs[i].surname = 'x';*/
     }
 
-    printf("\nData node is initialized..\n");
-
+    printf("\nData node is initialized... Node ID:  %d\n", node->id);
+    
     return 0;
+}
+
+void set_parent_id(BF_Block* block, int id){
+    
+    DataNode* node = (DataNode*)BF_Block_GetData(block);
+    
+    node->parent_id = id;
 }
 
 int insert_DataNode(BF_Block* block ,Record *rec){
@@ -49,8 +57,8 @@ int insert_DataNode(BF_Block* block ,Record *rec){
     //tsekaroume gia diples eggrafes
     for (int i=0; i< node->record_counter;i++){
         //an to record id eisodou einai idio me kapoio apo ta keys tote ban
-        if(node->recs[i]->id == rec.id){
-            printf("Duplicate key found %d", rec.id);
+        if(node->recs[i]->id == rec->id){
+            printf("Duplicate key found %d", rec->id);
             return -1;
         }
     }
@@ -61,7 +69,7 @@ int insert_DataNode(BF_Block* block ,Record *rec){
     // pou theloume na eisagoume
     // an einai tote ta kanoume swap kai auti i diadikasia ginetai mexri na min isxuei to condition
     // etsi diateiroume auskousa seira ton records sto datanode
-    for (i = node->record_counter; i > 0 && node->recs[i-1].id > rec.id; i--) {
+    for (i = node->record_counter; i > 0 && node->recs[i-1].id > rec->id; i--) {
         node->recs[i] = node->recs[i-1];
     }
     

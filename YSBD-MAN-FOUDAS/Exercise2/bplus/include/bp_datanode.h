@@ -10,6 +10,7 @@
 
 typedef struct DataNode
 {
+    int node_id;        //node id
     int next_block_ptr;  // pointer gia to epomeno data node block pros ta deksia
     Record recs[MAX_RECORDS];      // pinakas me ta records 
     int record_counter;     // counter me ta recs tou pinaka 
@@ -18,6 +19,7 @@ typedef struct DataNode
 
 
 int init_DataNode(BF_Block* block);
+void set_parent_id( BF_Block* block ,int id);
 int insert_DataNode( BF_BLOCK* block ,Record *rec);
 //int split_data(BF_Block *block, BF_Block *newblock, Record *rec);
 //int search_record(BF_Block *block, int id, Record **result);
