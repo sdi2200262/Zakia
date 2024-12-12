@@ -262,6 +262,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         bplus_info->total_record_counter++;                 //auksanoume to total record  counter
 
         printf("bplus info updated.......\n");
+        printf("height = %d\n\n" , bplus_info->tree_height);
         //kaname allages sta blocks ara set dirty kai unpin gia na graftei sto disko
         BF_Block_SetDirty(root_block);
         //BF_UnpinBlock(root_block);
@@ -281,6 +282,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     //dimiourgoume neo block
     BF_Block* block;
     BF_Block_Init(&block);
+    CALL_BF(BF_AllocateBlock(file_desc, block));
+
    
     //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
     //eisagogi eggrafisn
@@ -289,19 +292,21 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     printf("traversing tree starting from curr_node = %d and curr_level = 0\n\n", curr_node);
     //perase apo olous tous index nodes sto sosto path
-    while(curr_level < bplus_info->tree_height -1){
-        
+    while(curr_level <= bplus_info->tree_height -1){
+        printf("mesa stin while:\n");
+
         //bres pointer gia curr node
-        BF_GetBlock(file_desc, curr_node, block);
+        CALL_BF(BF_GetBlock(file_desc, 0, block));
+        
 
         printf("mesa stin while:\n");
-        printf("curr_node = %d and curr_level = %d", curr_node, curr_level);
+        printf("curr_node = %d and curr_level = %d\n", curr_node, curr_level);
 
         //bres to sosto path gia to epomeno node kai kane update to curr node
         curr_node = find_next_Node(block,record.id);
         
         //unpin unused block
-        //BF_UnpinBlock(block);
+        BF_UnpinBlock(block);
         curr_level++;
     }
 
