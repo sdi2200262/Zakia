@@ -31,6 +31,7 @@ typedef struct {
 static OpenFileEntry open_files[MAXOPENFILES];
 
 // Initialize open files array
+/*
 void initOpenFilesArray() {
     
     static int initialized = 0;     //check an ine already initialized
@@ -56,6 +57,7 @@ int findFreeFileSlot() {
     }
     return -1;
 }
+*/
 
 
 // BP_CreateFile implementation
@@ -107,18 +109,19 @@ int BP_CreateFile(char *fileName) {
 // BP_OpenFile implementation
 BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     
-    initOpenFilesArray();
+    //initOpenFilesArray();
     
     // Open file at BF level
     BF_OpenFile(fileName, file_desc);
 
-
+    /*
     // Find a free slot in open files array
     int slot = findFreeFileSlot();
     if (slot == -1) {
         BF_CloseFile(*file_desc);
         return NULL;
     }
+    */
     
     // Read first block (metadata)
     BF_Block *block;
