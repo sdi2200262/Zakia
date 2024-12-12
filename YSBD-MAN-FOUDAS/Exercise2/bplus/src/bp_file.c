@@ -183,29 +183,65 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     // periptosi pou to dedro ine adeio kai den uparxei riza
     if (bplus_info->tree_height==-1){
 
-        BF_Block* block;
+        BF_Block* root_block;
         
-        BF_Block_Init(&block);      
+        BF_Block_Init(&root_block);      
 
         CALL_BF(BF_AllocateBlock(file_desc, block));    
 
+        int root_block_id;
+        CALL_BF(BF_GetBlockCounter(file_desc , &root_block_id));
+
         printf("\nAdeio tree - bazoume riza\n");
 
-        //ine o protos kombos tou dedrou ara tha ine mono enas datanode
-        if (init_DataNode(block)==0){               
-            printf("\n init data node workds!");
+        // ine to proto entry tou dedrou ara tha baloume ena IndexNode me to record.id 
+        // kai 2 DataNodes to ena adeio kai to allo me to record
+        if (init_IndexNode(root_block)==0){               
+            printf("Data node with block ID %d is initialized.\n", root_block_id)
         }
 
-        //bazume to record sto data node
-        if(insert_DataNode(block, &record) == 0){
-            printf("\nInsert doulepse\n");
-
+        //bazume to record.id sto root IndexNode
+        if(insert_key_to_IndexNode(root_block, record.id) == 0){
+            printf("\nRecord with ID: %d is inserted in block with ID: %d\n", record.id, root_block_id);
         }
+
+        
+        // tora ftiaxnoume ta duo DataNodes pou tha deixnoun ta pointers ths root
+        BF_Block* left_data_block;
+        BF_Block_Init(&left_data_block);
+        CALL_BF(BF_AllocateBlock(file_desc, left_data_block));
+        
+        int left_data_block_id;
+        CALL_BF(BF_GetBlockCounter(file_desc , &left_data_block_id));
+        insert_pointer_to_IndexNode(root_block, left_data_block_id);
+
+        BF_Block* right_data_block;
+        BF_Block_Init(&right_data_block);
+        CALL_BF(BF_AllocateBlock(file_desc, right_data_block));
+
+        int right_data_block_id;
+        CALL_BF(BF_GetBlockCounter(file_desc , &right_data_block_id));
+        insert_pointer_to_IndexNode(root_block, right_data_block_id);
+
+        //tora exoume etoimo to index node tou root kai ta duo pointers
+        //meta prepei na kanoume init ta duo data nodes
+
+        // to left_data_node tha ine adeio alla o deiktis tou prepei na deixnei sto right_data_node
+        if(init_DataNode(left_data_block)==0){
+            insert_pointer_to_DataNode(left_data_block,right_data_block_id);
+            printf("\nInit DataNode doulepse\n");
+        }   
+
+        // to right_data_node tha periexei to record pou exei record.id to idio me to key tou root
+        if(init_DataNode(right_data_block)==0){
+            insert_record_to_DataNode(block, record);
+            printf("\nInit DataNode doulepse\n");
+        }   
 
         //update bplus info
-        bplus_info->root = (int)BF_Block_GetData(block);  //apothikevoume to block id sto opoio ine to root
-        bplus_info->tree_height=1;                        //kanoume update to tree hight
-        bplus_info->total_record_counter++;               //auksanoume to total record  counter
+        bplus_info->root_block_id = root_block_id;          //apothikevoume to block id sto opoio ine to root
+        bplus_info->tree_height=2;                          //kanoume update to tree hight
+        bplus_info->total_record_counter++;                 //auksanoume to total record  counter
 
         //kaname allages sto block ara set dirty kai unpin gia na graftei sto disko
         BF_Block_SetDirty(block);
@@ -216,13 +252,14 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
 
     //upoloipes periptoseis
+
+    //dimiourgoume neo block
     BF_Block* block;
     BF_Block_Init(&block);
-
    
     //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
-    //eisagogi eggrafis
-    int curr_node = bplus_info->root;
+    //eisagogi eggrafisn
+    int curr_node = bplus_info->root_block_id;
     int curr_level=0;
 
     //perase apo olous tous index nodes sto sosto path
@@ -231,13 +268,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         //bres pointer gia curr node
         BF_GetBlock(file_desc, curr_node, block);
 
-        if(curr_level == bplus_info->tree_height-1 ){
-            int id = (int)BF_Block_GetData(block);
-            set_parent_id(block, id);
-        }
-
         //bres to sosto path gia to epomeno node kai kane update to curr node
-        curr_node = find_path(block,record);
+        curr_node = find_next_Node(block,record.id);
         
         //unpin unused block
         BF_UnpinBlock(block);
@@ -248,13 +280,18 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     //otan ftasoume se node fullo pare pointer gia to block
     BF_GetBlock(file_desc, curr_node, block);
 
+    //pleon to block ine ena leaf data node
+
     //kai kane insert sto leaf node to key
     if(insert_DataNode(block, &record) == 0){
         printf("\nInsert doulepse\n");
     }
     
-    if(insert_DataNode(block, &record == MAX_RECORDS)){
+    if(insert_DataNode(block, &record) == recs_size){
+
+        printf("\nto root foulare!\n")
         //splitarisma
+        return 0;
     }
 
     bplus_info->total_record_counter++;

@@ -6,10 +6,9 @@
 #define bplus_ERROR -1
 
 typedef struct {
-    //int root_block;
-    int root;
-    int tree_height;
-    int total_record_counter;
+    int root_block_id;  //periexei to block id tou block tis rizas
+    int tree_height;        //xreiazetai gia tin prospelasi tou dedrou
+    int total_record_counter;       
     int file_desc;
 } BPLUS_INFO;
 

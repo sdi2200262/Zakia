@@ -7,8 +7,6 @@
 #include "record.h"
 #include "bp_datanode.h"
 
-#define MAX_RECORDS 2 
-
 /* mesa sto file auto periexontai sinarthseis pou diaxeirizontai tous kombous fylla enos bplus tree, oi  opoioi komvoi einai 
     sthn ousia komvoi dedomenon(opos anaferetai k sth theoria). Oi sinartiseis autes aforoun basikes leitoyrgies pano se komvous
     opos arxikopoihsh, eisagwgh , anazhthsh alla kai diaxwrismos komvou ean se auton yparxoun parapanw apo MAX_RECORDS eggrafes.
@@ -16,49 +14,35 @@
     eggrafwn(counter),enan deikth se epomeno block kai enan pinaka me tis eggrafes pou briskontai mesa sto current block(node), 
     o opoios exei statiko megethos kai iso me MAX_RECORDS */
 
-
-//arxikopoiei to datanode pou tha kanoume eisagosi sto dedro
-int init_DataNode(BF_Block* block){
-
+// arxikopoiei to data node - block
+int init_DataNode( BF_Block* block){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
-
-    node->node_id = (int)BF_Block_GetData(block);    //pairnoume ena block id
-    node->next_block_ptr = -1;    //arxikopoioume ton deikti gia to epomeno block
-    node->parent_id = -1;
-    node->record_counter=0;    
-    for (int i = 0; i <MAX_RECORDS; i++){      //arxikopoioume ton pinaka me ta records
+    
+    node->next_data_node = -1;
+    node->recs_counter = 0;
+    for (int i=0; i<= recs_size; i++) {
         node->recs[i].id = -1;
-        /*node->recs[i].name = 'x';
-        node->recs[i].surname = 'x';
-        node->recs[i].surname = 'x';*/
+        node->recs[i].name = ' ';
+        node->recs[i].surname = ' ';
+        node->recs[i].city = ' ';
     }
 
-    printf("\nData node is initialized... Node ID:  %d\n", node->node_id);
-    
     return 0;
 }
 
-void set_parent_id(BF_Block* block, int id){
-    
-    DataNode* node = (DataNode*)BF_Block_GetData(block);
-    
-    node->parent_id = id;
-}
-
-int insert_DataNode(BF_Block* block ,Record *rec){
-    
+int insert_record_to_DataNode(BF_Block* block, Record* record){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
 
-    if ( node->record_counter>=MAX_RECORDS){
-        //epistrefoume MAXRECORDS gia na kanei to splitting h BP_INSERT
-        return MAX_RECORDS;
-    }
+    // elegxoume an xoraei to record sto block 
+    // an den xoraei kanoume epistrefoume recs_size gia na klithei h split
+    if(node->recs_counter >= recs_size) return recs_size; 
 
-    //tsekaroume gia diples eggrafes
-    for (int i=0; i< node->record_counter;i++){
-        //an to record id eisodou einai idio me kapoio apo ta keys tote ban
-        if(node->recs[i].id == rec->id){
-            printf("Duplicate key found %d", rec->id);
+    // elegxoume an to id apo to record eisodou uparxei hdh sto block
+    for (int i = 0; i < node->recs_counter; i++) {
+        
+        if (node->recs[i].id == record->id) {
+            printf("Duplicate found!\n\n");
+            // Duplicate key not allowed
             return -1;
         }
     }
@@ -69,14 +53,23 @@ int insert_DataNode(BF_Block* block ,Record *rec){
     // pou theloume na eisagoume
     // an einai tote ta kanoume swap kai auti i diadikasia ginetai mexri na min isxuei to condition
     // etsi diateiroume auskousa seira ton records sto datanode
-    for (i = node->record_counter; i > 0 && node->recs[i-1].id > rec->id; i--) {
+    for (i = node->recs_counter; i > 0 && node->recs[i-1].id > record->id; i--) {
         node->recs[i] = node->recs[i-1];
     }
     
     // eisagoume to neo record
-    node->recs[i] = *rec;
-    node->record_counter++;
+    node->recs[i] = record;
+    node->recs_counter++;
+
 
     return 0;
 }
- 
+
+
+int insert_pointer_to_DataNode( BF_Block* block, int new_block_id){
+    DataNode* node = (DataNode*)BF_Block_GetData(block);
+
+    node->next_data_node = new_block_id;
+    
+    return 0;
+}

@@ -6,15 +6,30 @@
 #include "bp_file.h"
 #include "bp_datanode.h"
 
-#define MAX_INDEX_KEYS 2
+// ena IndexNode ine ena BF_Block ara periexei 512bytes
+// o pinakas pou periexei ta kleidia tha ine:
+//      {(512 / sizeof(int)) / 2} -1      giati theloume na einai ena ligotero apo ta pointers
+//
+// o pinakas pou periexei ta pointers ( block id numbers ) tha ine:
+//       (512 / sizeof(int) / 2)   
+//
+// ta 4 bytes pou perisseoun antistoixoun sto int key_counter
+// etsi desmeuoume olo to diathesimo xoro tou block !!!
 
-typedef struct
-{
-    int node_id;
-    int keys[MAX_INDEX_KEYS];   //pinakas me ta index keys 
-    int key_counter;    //counter gia ta index keys tou pinaka
-    int child_id_array[MAX_INDEX_KEYS+1];  //pinakas me tous deiktes sta ids ton paidion
-    int child_id_counter;       //counter gia ta pointer se paidia kombous
+int keys_size = ((512/ sizeof(int) ) /2) - 1;
+int pointers_size = ((512/ sizeof(int) ) /2);
+
+typedef struct IndexNode{
+
+    int keys_counter;
+    int keys[keys_size];
+    int pointer[pointers_size];
+
 } IndexNode;
 
 #endif
+
+int init_IndexNode(BF_Block* block);
+int insert_key_to_IndexNode(BF_Block* block, int key);
+int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id);
+int find_next_Node(BF_Block* block, int key);
