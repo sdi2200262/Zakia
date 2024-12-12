@@ -218,7 +218,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         //bazume to record.id sto root IndexNode
         if(insert_key_to_IndexNode(root_block, record.id) == 0){
-            printf("\nKey: %d is inserted in Index Root Noode with block with ID: %d\n", record.id, root_block_id);
+            printf("Key: %d is inserted in Index Root Noode with block ID: %d\n", record.id, root_block_id);
         }
 
         
