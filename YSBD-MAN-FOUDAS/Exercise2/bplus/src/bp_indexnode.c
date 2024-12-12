@@ -4,6 +4,8 @@
 
 #include "bf.h"
 #include "bp_file.h"
+#include "bp_datanode.h"
+#include "bp_indexnode.h"
 #include "record.h"
 
 
@@ -98,5 +100,5 @@ int find_next_Node(BF_Block* block, int key){
    }
 
    // an einai megalutero apo ola ta kleidia tote balto sto teleutaio slot oso pio deksia paei
-   return node->pointers[keys_counter];
+   return node->pointers[node->keys_counter];
 }

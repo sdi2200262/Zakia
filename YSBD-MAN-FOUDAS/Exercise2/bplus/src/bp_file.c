@@ -197,7 +197,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         // ine to proto entry tou dedrou ara tha baloume ena IndexNode me to record.id 
         // kai 2 DataNodes to ena adeio kai to allo me to record
         if (init_IndexNode(root_block)==0){               
-            printf("Data node with block ID %d is initialized.\n", root_block_id)
+            printf("Data node with block ID %d is initialized.\n", root_block_id);
         }
 
         //bazume to record.id sto root IndexNode
@@ -234,7 +234,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         // to right_data_node tha periexei to record pou exei record.id to idio me to key tou root
         if(init_DataNode(right_data_block)==0){
-            insert_record_to_DataNode(block, record);
+            insert_record_to_DataNode(right_data_block, &record);
             printf("\nInit DataNode doulepse\n");
         }    
 
@@ -243,9 +243,16 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         bplus_info->tree_height=2;                          //kanoume update to tree hight
         bplus_info->total_record_counter++;                 //auksanoume to total record  counter
 
-        //kaname allages sto block ara set dirty kai unpin gia na graftei sto disko
-        BF_Block_SetDirty(block);
-        BF_UnpinBlock(block);
+        //kaname allages sta blocks ara set dirty kai unpin gia na graftei sto disko
+        BF_Block_SetDirty(root_block);
+        BF_UnpinBlock(root_block);
+
+        BF_Block_SetDirty(right_data_block);
+        BF_UnpinBlock(right_data_block);
+
+        BF_Block_SetDirty(left_data_block);
+        BF_UnpinBlock(left_data_block);
+
 
         return right_data_block_id;  
     }
@@ -283,13 +290,13 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     //pleon to block ine ena leaf data node
 
     //kai kane insert sto leaf node to key
-    if(insert_DataNode(block, &record) == 0){
+    if(insert_record_to_DataNode(block, &record) == 0){
         printf("\nInsert doulepse\n");
     }
     
-    if(insert_DataNode(block, &record) == recs_size){
+    if(insert_record_to_DataNode(block, &record) == recs_size){
 
-        printf("\nto root foulare!\n")
+        printf("\nto root foulare!\n");
         //splitarisma
         return 0;
     }

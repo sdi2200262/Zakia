@@ -16,20 +16,20 @@
 // ta 4 bytes pou perisseoun antistoixoun sto int key_counter
 // etsi desmeuoume olo to diathesimo xoro tou block !!!
 
-int keys_size = ((512/ sizeof(int) ) /2) - 1;
-int pointers_size = ((512/ sizeof(int) ) /2);
+#define keys_size (((512 / sizeof(int)) / 2) - 1)
+#define pointers_size ((512 / sizeof(int)) / 2)
 
 typedef struct IndexNode{
 
     int keys_counter;
     int keys[keys_size];
-    int pointer[pointers_size];
+    int pointers[pointers_size];
 
 } IndexNode;
 
-#endif
 
 int init_IndexNode(BF_Block* block);
 int insert_key_to_IndexNode(BF_Block* block, int key);
 int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id);
 int find_next_Node(BF_Block* block, int key);
+#endif

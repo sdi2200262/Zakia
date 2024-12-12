@@ -6,7 +6,7 @@
 #include "bp_file.h"
 #include "bp_indexnode.h"
 
-static int recs_size = 504 / sizeof(Record);
+#define recs_size ( 504 / sizeof(Record))
 
 
 

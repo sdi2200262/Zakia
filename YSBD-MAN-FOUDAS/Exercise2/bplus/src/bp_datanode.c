@@ -22,9 +22,9 @@ int init_DataNode( BF_Block* block){
     node->recs_counter = 0;
     for (int i=0; i<= recs_size; i++) {
         node->recs[i].id = -1;
-        node->recs[i].name = ' ';
-        node->recs[i].surname = ' ';
-        node->recs[i].city = ' ';
+        strncpy(node->recs[i].name, "", sizeof(node->recs[i].name));
+        strncpy(node->recs[i].surname, "", sizeof(node->recs[i].surname));
+        strncpy(node->recs[i].city, "", sizeof(node->recs[i].city));
     }
 
     return 0;
@@ -58,7 +58,7 @@ int insert_record_to_DataNode(BF_Block* block, Record* record){
     }
     
     // eisagoume to neo record
-    node->recs[i] = record;
+    node->recs[i] = *record;
     node->recs_counter++;
 
 
