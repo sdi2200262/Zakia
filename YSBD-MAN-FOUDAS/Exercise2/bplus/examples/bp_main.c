@@ -42,6 +42,7 @@ void insertEntries(){
   int file_desc;
   BPLUS_INFO* info = BP_OpenFile(FILE_NAME, &file_desc);
   Record record;
+
   /*
   for (int i = 0; i < RECORDS_NUM; i++)
   {
@@ -49,6 +50,7 @@ void insertEntries(){
     BP_InsertEntry(file_desc,info, record);
   }
   */
+
   //bazume riza 
   record = randomRecord();
   int first_entry=record.id;
@@ -58,7 +60,8 @@ void insertEntries(){
 
   //bazoume deftero record
   record = randomRecord();
-  int second_entry;
+  int second_entry=record.id;
+  printf("second entry is: %d", second_entry);
   second_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nSecond entry with id: %d , completed in block with id: %d\n", record.id , second_entry);
 

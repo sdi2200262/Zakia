@@ -277,7 +277,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
 
     //upoloipes periptoseis
-
+    printf("\n---- eimaste stis upoloipes periptoseis ektos tis rizas\n\n");
     //dimiourgoume neo block
     BF_Block* block;
     BF_Block_Init(&block);
@@ -287,21 +287,25 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     int curr_node = bplus_info->root_block_id;
     int curr_level=0;
 
+    printf("traversing tree starting from curr_node = %d and curr_level = 0\n\n", curr_node);
     //perase apo olous tous index nodes sto sosto path
     while(curr_level < bplus_info->tree_height -1){
         
         //bres pointer gia curr node
         BF_GetBlock(file_desc, curr_node, block);
 
+        printf("mesa stin while:\n");
+        printf("curr_node = %d and curr_level = %d", curr_node, curr_level);
+
         //bres to sosto path gia to epomeno node kai kane update to curr node
         curr_node = find_next_Node(block,record.id);
         
         //unpin unused block
-        BF_UnpinBlock(block);
+        //BF_UnpinBlock(block);
         curr_level++;
     }
 
-
+    printf("Bghkame apo tin while kai exoume curr_block = %d and curr_level = %d", curr_node, curr_level);
     //otan ftasoume se node fullo pare pointer gia to block
     BF_GetBlock(file_desc, curr_node, block);
 
