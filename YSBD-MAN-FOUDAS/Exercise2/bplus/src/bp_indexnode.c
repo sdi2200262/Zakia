@@ -17,8 +17,8 @@
 int init_IndexNode(BF_Block* block){
    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
    
-   for (int i=0; i<= keys_size; i++) node->keys[i] = -1;
-   for (int i=0; i<= pointers_size; i++) node->pointers[i] = -1;
+   for (int i=0; i< keys_size; i++) {node->keys[i] = -1;}
+   for (int i=0; i< pointers_size; i++) {node->pointers[i] = -1;}
 
    return 0;
 }
