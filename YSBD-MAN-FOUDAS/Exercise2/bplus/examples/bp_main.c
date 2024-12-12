@@ -54,7 +54,6 @@ void insertEntries(){
   //bazume riza 
   record = randomRecord();
   int first_entry=record.id;
-  printf("first entry is: %d", first_entry);
   first_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nFirst entry with id: %d, completed in block %d\n", record.id, first_entry);
 
