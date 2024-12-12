@@ -64,7 +64,7 @@ int findFreeFileSlot() {
 int BP_CreateFile(char *fileName) {
 
     //arxikopoiise to array me ta openfiles
-    initOpenFilesArray();
+    //initOpenFilesArray();
 
 
     // Try to create the file using BF level
@@ -132,11 +132,13 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     BPLUS_INFO* bplus_info = malloc(sizeof(BPLUS_INFO));
     memcpy(bplus_info, BF_Block_GetData(block), sizeof(BPLUS_INFO));
     
+    /*
     // Update open files array
     open_files[slot].is_open = 1;       //kleise auto to slot
     open_files[slot].file_desc = *file_desc;    // update file_desc
     strcpy(open_files[slot].filename, fileName);    // update fileName
     open_files[slot].info = bplus_info;     // update ta metadata
+    */
     
     // Unpin block
     BF_UnpinBlock(block);
@@ -152,6 +154,7 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
 // BP_CloseFile implementation
 int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     
+    /*
     // Find the file in open files array
     int slot = -1;
     for (int i = 0; i < MAXOPENFILES; i++) {
@@ -166,17 +169,22 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
         printf("\nClose File returned -1\nFile is already closed or doesnt exist\n");
         return -1;
     }
+    */
     
     // Close file at BF level
     CALL_BF(BF_CloseFile(file_desc));
+    free(info);
     
     // Free metadata and reset slot
+   
+   /*
     free(open_files[slot].info);
     open_files[slot].is_open = 0;
     open_files[slot].file_desc = -1;
     open_files[slot].filename[0] = '\0';
     open_files[slot].info = NULL;
     
+   */
 
     printf("\nClosed File (BP_CloseFile works\n");
     
@@ -236,7 +244,9 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         // to left_data_node tha ine adeio alla o deiktis tou prepei na deixnei sto right_data_node
         if(init_DataNode(left_data_block)==0){
-            insert_pointer_to_DataNode(left_data_block,right_data_block_id);
+            if (insert_pointer_to_DataNode(left_data_block,right_data_block_id) == 0){
+                printf("Inserts pointer : %d , to datanode : %d" ,right_data_block_id , left_data_block_id);
+            }
             printf("\nInit DataNode doulepse\n");
         }   
 
@@ -251,16 +261,16 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         bplus_info->tree_height=2;                          //kanoume update to tree hight
         bplus_info->total_record_counter++;                 //auksanoume to total record  counter
 
+        printf("bplus info updated.......\n");
         //kaname allages sta blocks ara set dirty kai unpin gia na graftei sto disko
         BF_Block_SetDirty(root_block);
-        BF_UnpinBlock(root_block);
+        //BF_UnpinBlock(root_block);
 
         BF_Block_SetDirty(right_data_block);
-        BF_UnpinBlock(right_data_block);
+        //BF_UnpinBlock(right_data_block);
 
         BF_Block_SetDirty(left_data_block);
-        BF_UnpinBlock(left_data_block);
-
+        //BF_UnpinBlock(left_data_block);
 
         return right_data_block_id;  
     }
