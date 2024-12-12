@@ -277,7 +277,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
 
     //upoloipes periptoseis
-    printf("\n---- eimaste stis upoloipes periptoseis ektos tis rizas\n\n");
+    printf("\n--------------------------------------------------------\n");
+    printf("\neimaste stis upoloipes periptoseis ektos tis rizas META TO if()\n\n");
     //dimiourgoume neo block
     BF_Block* block;
     BF_Block_Init(&block);
@@ -287,7 +288,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     int curr_node = bplus_info->root_block_id;
     int curr_level=0;
 
-    printf("traversing tree starting from curr_node = %d and curr_level = 0\n\n", curr_node);
+    printf("bainoume sto while curr_node = %d and curr_level = 0\n\n", curr_node);
+    
     //perase apo olous tous index nodes sto sosto path
     while(curr_level < bplus_info->tree_height -1){
         

@@ -61,7 +61,7 @@ void insertEntries(){
   //bazoume deftero record
   record = randomRecord();
   int second_entry=record.id;
-  printf("second entry is: %d", second_entry);
+  printf("second entry is: %d\n", second_entry);
   second_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nSecond entry with id: %d , completed in block with id: %d\n", record.id , second_entry);
 
