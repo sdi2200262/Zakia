@@ -69,22 +69,26 @@ int BP_CreateFile(char *fileName) {
     int file_desc;
     BF_Block *block;
     
-    CALL_BF(BF_CreateFile(fileName)); 
-    
-    CALL_BF(BF_OpenFile(fileName,&file_desc));
-
     BF_Block_Init(&block);
+    
+    CALL_BF(BF_CreateFile(fileName)); 
+
+    CALL_BF(BF_OpenFile(fileName,&file_desc));
     
     CALL_BF(BF_AllocateBlock(file_desc, block));
 
-    
     // arxikopoiei ta metadedomena sto block 
     BPLUS_INFO* bplus_info = (BPLUS_INFO*)BF_Block_GetData(block);
     
     //arxikopoioume ta metadedomena tou bplus dedrou
     bplus_info->tree_height = -1;         // to dedro ine adeio - den uparxei riza
-    bplus_info->file_desc = 0;  
+    bplus_info->file_desc = file_desc;  
     bplus_info->total_record_counter = 0;
+
+    printf("Metadata block created\n");
+    printf("tree_hight              initialized: %d\n", bplus_info->tree_height);
+    printf("file_desc               initialized: %d\n", bplus_info->file_desc);
+    printf("total_record_counter    initialized: %d\n\n", bplus_info->total_record_counter);
 
     // theto to block os dirty kai kano unpin
     BF_Block_SetDirty(block);
@@ -95,7 +99,7 @@ int BP_CreateFile(char *fileName) {
     BF_Close();
     //den imaste sigouroi an thelei destroy
     //BF_Block_Destroy(&block);
-    printf("\nCreated file (BP_CreateFile works)\n");
+    printf("\nCreated file with filename: %s, (BP_CreateFile works)\n\n", fileName);
     
     return 0;
 }
@@ -136,6 +140,7 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     //BF_Block_Destroy(&block);
 
     printf("\nOpened file (BP_OpenFile works)\n");
+
     
     
     return bplus_info;
