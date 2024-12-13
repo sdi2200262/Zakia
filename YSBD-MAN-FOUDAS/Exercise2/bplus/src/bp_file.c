@@ -307,14 +307,15 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         
         printf("mesa stin while ( META to GetBlock ):\n");
 
-        //unpin unused block
-        BF_UnpinBlock(block);
+        // de thelei block destroy edo
+
         curr_level++;
         if(curr_level == bplus_info->tree_height){
             leaf_block_id = curr_block;
         }
 
     }
+
 
 
     printf("\n--------------------------------------------------------\n");
