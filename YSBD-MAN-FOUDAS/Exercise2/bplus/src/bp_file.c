@@ -99,8 +99,9 @@ int BP_CreateFile(char *fileName) {
     // kleise to fakelo
     CALL_BF(BF_CloseFile(file_desc));
     BF_Close();
-    //den imaste sigouroi an thelei destroy
-    //BF_Block_Destroy(&block);
+
+    //apodesmeuse to allocated block giati graftike sto disko
+    BF_Block_Destroy(&block);
     printf("\nCreated file with filename: %s, (BP_CreateFile works)\n\n", fileName);
     
     return 0;
@@ -171,9 +172,9 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     }
     */
     
+    
     // Close file at BF level
     CALL_BF(BF_CloseFile(file_desc));
-    free(info);
     
     // Free metadata and reset slot
    
@@ -287,43 +288,41 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     CALL_BF(BF_AllocateBlock(file_desc, block));
 
     //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
-    //eisagogi eggrafisn
-    int root_id = bplus_info->root_block_id;
-    CALL_BF(BF_GetBlock(file_desc, root_id, block)); 
+    //eisagogi eggrafis
+    int curr_block = bplus_info->root_block_id;
     int curr_level=0;
-
-    int leaf_block_id;
-    printf("bainoume sto curr_level = 0\n\n");
+    printf("bainoume sto while me:\n    curr_level = 0\n    curr_block = %d\n\n", curr_block);
     
+    //gia debugging
+    int i;
 
     //perase apo olous tous index nodes sto sosto path
     while(curr_level <= bplus_info->tree_height -1){
-        printf("mesa stin while ( prin to GetBlock ):\n");
+        i++;
+        printf("\nmesa stin while (i = %d)\n",i);
+        
+        //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
+        CALL_BF(BF_GetBlock(file_desc, curr_block, block));
 
-        //bres pointer gia curr node
-        int curr_block = find_next_Node(block,record.id);
+        //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
+        curr_block = find_next_Node(block,record.id);
         
         printf("h find_next_Node epestrepse to epomeno block na exei id: %d\n",curr_block );
-        CALL_BF(BF_GetBlock(file_desc, curr_block, block));
         
         printf("mesa stin while ( META to GetBlock ):\n");
 
         // de thelei block destroy edo
-
         curr_level++;
-        if(curr_level == bplus_info->tree_height){
-            leaf_block_id = curr_block;
-        }
 
     }
 
 
 
     printf("\n--------------------------------------------------------\n");
-    printf("Bghkame apo tin while kai exoume curr_block = %d and curr_level = %d",leaf_block_id, curr_level);
+    printf("Bghkame apo tin while kai exoume curr_block = %d and curr_level = %d",curr_block, curr_level);
     
     //otan ftasoume se node fullo pare pointer gia to block
-    BF_GetBlock(file_desc, leaf_block_id, block);
+    BF_GetBlock(file_desc, curr_block, block);
 
     //pleon to block ine ena leaf data node
 
@@ -333,7 +332,6 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     }
     
     if(insert_record_to_DataNode(block, &record) == recs_size){
-
         printf("\nto root foulare!\n");
         //splitarisma
         return 0;
@@ -343,8 +341,9 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
+    BF_Block_Destroy(block)
 
-    return leaf_block_id;
+    return curr_block;
     
 }
     
