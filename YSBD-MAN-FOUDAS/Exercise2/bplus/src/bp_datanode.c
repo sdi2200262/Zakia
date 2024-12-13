@@ -20,7 +20,7 @@ int init_DataNode( BF_Block* block){
     
     node->next_data_node = -1;
     node->recs_counter = 0;
-    for (int i=0; i<= recs_size; i++) {
+    for (int i=0; i< recs_size; i++) {
         node->recs[i].id = -1;
         strncpy(node->recs[i].name, "", sizeof(node->recs[i].name));
         strncpy(node->recs[i].surname, "", sizeof(node->recs[i].surname));
