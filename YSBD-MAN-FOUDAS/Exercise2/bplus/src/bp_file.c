@@ -300,9 +300,12 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         i++;
         printf("\nmesa stin while (i = %d)\n",i);
         
+        printf("curr_block is %d\n",curr_block);
         //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
         CALL_BF(BF_GetBlock(file_desc, curr_block, block));
 
+        printf("Kalesame tin GetBlock...\n");
+        debug(block);
         //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
         curr_block = find_next_Node(block,record.id);
         

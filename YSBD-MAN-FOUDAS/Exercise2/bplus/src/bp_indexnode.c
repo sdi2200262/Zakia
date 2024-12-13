@@ -18,6 +18,7 @@ int init_IndexNode(BF_Block* block){
    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
    
    node->keys_counter = 0;
+   node->pointers_counter = 0;
 
    for (int i=0; i< keys_size; i++) {node->keys[i] = -1;}
    for (int i=0; i< pointers_size; i++) {node->pointers[i] = -1;}
@@ -103,21 +104,32 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
 int find_next_Node(BF_Block* block, int key) {
     IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
-    // Ensure there are pointers to check
-    if (node->pointers_counter == 0) {
-        // Error case: no valid pointers
-        fprintf(stderr, "Error: No valid pointers in the node.\n");
-        return -1; // Indicate failure
-    }
+   for (int i = 0; i < node->pointers_counter; i++) {
+      // Check if the key is less than or equal to the current key
+      if (key <= node->keys[i]) {
+         // Return the corresponding pointer
+         return node->pointers[i];
+      }
+   }
 
-    for (int i = 0; i < node->pointers_counter; i++) {
-        // Check if the key is less than or equal to the current key
-        if (key <= node->keys[i]) {
-            // Return the corresponding pointer
-            return node->pointers[i];
-        }
-    }
+   printf("\nPointers_counter is returned in find_next_Node which is: %d\n", node->pointers_counter);
 
-    // If the key is larger than all keys, return the last pointer
-    return node->pointers[node->pointers_counter - 1];
+   // If the key is larger than all keys, return the last pointer
+   return node->pointers[node->pointers_counter - 1];
+}
+
+int debug(BF_Block* block){
+   IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+
+   printf("To block auto exei:\n");
+   printf("keys counter: %d\npointers counter: %d\n\n", node->keys_counter, node->pointers_counter);
+
+   for(int i =0; i< node->keys_counter;i++){
+      printf("%d ", node->keys[i]);
+   }
+   printf("\n");
+   for(int i =0; i< node->pointers_counter;i++){
+      printf("%d ", node->pointers[i]);
+   }
+   return 0;
 }
