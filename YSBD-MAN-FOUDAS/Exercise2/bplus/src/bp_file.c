@@ -141,7 +141,7 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     */
     
     // Unpin block
-    BF_UnpinBlock(block);
+    //BF_UnpinBlock(block);
     //BF_Block_Destroy(&block);
 
     printf("\nOpened file with name: %s (BP_OpenFile works)\n\n", fileName);
@@ -303,6 +303,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         //bres pointer gia curr node
         int curr_block = find_next_Node(block,record.id);
         
+        printf("h find_next_Node epestrepse to epomeno block na exei id: %d\n",curr_block );
         CALL_BF(BF_GetBlock(file_desc, curr_block, block));
         
         printf("mesa stin while ( META to GetBlock ):\n");
