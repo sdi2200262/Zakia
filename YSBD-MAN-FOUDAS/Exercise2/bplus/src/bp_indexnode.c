@@ -100,18 +100,24 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
 }
    
 
-int find_next_Node(BF_Block* block, int key){
-   IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+int find_next_Node(BF_Block* block, int key) {
+    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
-   for ( int i =0; i < node->pointers_counter; i++){
-      
-      // an to input key ine mikrotero apo to key tou slot i tote epistrefoume ton adistoixo pointer
-      if (key <= node->keys[i]){
-      
-         return node->pointers[i];
-      }
-   }
+    // Ensure there are pointers to check
+    if (node->pointers_counter == 0) {
+        // Error case: no valid pointers
+        fprintf(stderr, "Error: No valid pointers in the node.\n");
+        return -1; // Indicate failure
+    }
 
-   // an einai megalutero apo ola ta kleidia tote balto sto teleutaio slot oso pio deksia paei
-   return node->pointers[node->pointers_counter];
+    for (int i = 0; i < node->pointers_counter; i++) {
+        // Check if the key is less than or equal to the current key
+        if (key <= node->keys[i]) {
+            // Return the corresponding pointer
+            return node->pointers[i];
+        }
+    }
+
+    // If the key is larger than all keys, return the last pointer
+    return node->pointers[node->pointers_counter - 1];
 }
