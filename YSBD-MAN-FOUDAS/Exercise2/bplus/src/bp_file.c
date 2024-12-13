@@ -142,8 +142,9 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     */
     
     // Unpin block
-    //BF_UnpinBlock(block);
-    //BF_Block_Destroy(&block);
+    BF_UnpinBlock(block);
+    BF_Block_Destroy(&block);
+    BF_Close();
 
     printf("\nOpened file with name: %s (BP_OpenFile works)\n\n", fileName);
 
@@ -175,6 +176,7 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     
     // Close file at BF level
     CALL_BF(BF_CloseFile(file_desc));
+    free(info);
     
     // Free metadata and reset slot
    
