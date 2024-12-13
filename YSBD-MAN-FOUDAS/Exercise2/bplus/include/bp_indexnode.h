@@ -13,15 +13,15 @@
 // o pinakas pou periexei ta pointers ( block id numbers ) tha ine:
 //       (512 / sizeof(int) / 2)   
 //
-// ta 4 bytes pou perisseoun antistoixoun sto int key_counter
-// etsi desmeuoume olo to diathesimo xoro tou block !!!
 
-#define keys_size (((512 / sizeof(int)) / 2) - 1)
-#define pointers_size ((512 / sizeof(int)) / 2)
+
+#define keys_size (((512 / sizeof(int)) / 2) - 2)
+#define pointers_size (((512 / sizeof(int)) / 2) - 1)
 
 typedef struct IndexNode{
 
     int keys_counter;
+    int pointers_counter;
     int keys[keys_size];
     int pointers[pointers_size];
 

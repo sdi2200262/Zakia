@@ -31,7 +31,6 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    // elegxoume an xoraei to key sto block 
    // an den xoraei kanoume epistrefoume keys_size gia na klithei h split
    if(node->keys_counter >= keys_size) return keys_size; 
-
    // elegxoume an to key uparxei hdh sto block
    for (int i = 0; i < node->keys_counter; i++) {
       
@@ -43,7 +42,7 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    }
 
    // elegxoume se poia thesi tha baloume to neo key
-   int i;
+   int i = node->keys_counter -1;
    // pame stin teleutaia thesi kleidiou kai tsekaroume an einai megaliteri apo to key eisodou
    // an einai tote ta kanoume swap kai auti i diadikasia ginetai mexri na min isxuei to condition
    // etsi diateiroume auskousa seira ton keys sto IndexNode
@@ -55,44 +54,56 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    node->keys[i] = key;
    node->keys_counter++;
 
+   printf("\ninsrert key to index node works....\n\n");
+   printf("%d %d\n" , i ,node->keys[i]);
 
-    return 0;
+   for(int j=0; j<keys_size; j++){
+      printf("%d " , node->keys[j]);
+   }
+   printf("\n");
+   return 0;
 }
 
 
 int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
-   // elegxoume an to pointer uparxei hdh sto block
-   for (int i = 0; i < node->keys_counter+1; i++) {
+   // elegxoume an xoraei to key sto block 
+   // an den xoraei kanoume epistrefoume keys_size gia na klithei h split
+   if(node->pointers_counter >= pointers_size) return pointers_size; 
+   // elegxoume an to key uparxei hdh sto block
+   for (int i = 0; i < node->pointers_counter; i++) {
       
       if (node->pointers[i] == new_block_id) {
          printf("Duplicate pointer found!\n\n");
-         // Duplicate key not allowed
          return -1;
       }
    }
 
    // elegxoume se poia thesi tha baloume to neo pointer
-   int i;
-   // pame stin teleutaia thesi kleidiou kai tsekaroume an einai megaliteri apo to key eisodou
-   // an einai tote ta kanoume swap kai auti i diadikasia ginetai mexri na min isxuei to condition
-   // etsi diateiroume auskousa seira ton keys sto IndexNode
-   for (i = node->keys_counter+1; i > 0 && node->pointers[i-1] > new_block_id; i--) {
+   int i = node->pointers_counter;
+   for (i = node->pointers_counter; i > 0 && node->pointers[i-1] > new_block_id; i--) {
       node->pointers[i] = node->pointers[i-1];
    }
    
-   // eisagoume to neo pointer
+   // eisagoume to neo record
    node->pointers[i] = new_block_id;
-   
-    return 0;
+   node->pointers_counter++;
+
+   printf("%d %d\n" , i ,node->pointers[i]);
+
+   for(int j=0; j<pointers_size; j++){
+      printf("%d " , node->pointers[j]);
+   }
+   printf("\n");
+   return 0;
 }
    
 
 int find_next_Node(BF_Block* block, int key){
    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
-   for ( int i =0; i < node->keys_counter; i++){
+   for ( int i =0; i < node->pointers_counter; i++){
       
       // an to input key ine mikrotero apo to key tou slot i tote epistrefoume ton adistoixo pointer
       if (key <= node->keys[i]){
@@ -102,5 +113,5 @@ int find_next_Node(BF_Block* block, int key){
    }
 
    // an einai megalutero apo ola ta kleidia tote balto sto teleutaio slot oso pio deksia paei
-   return node->pointers[node->keys_counter];
+   return node->pointers[node->pointers_counter];
 }

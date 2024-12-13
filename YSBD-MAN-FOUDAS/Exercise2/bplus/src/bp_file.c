@@ -221,7 +221,6 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         if(insert_key_to_IndexNode(root_block, record.id) == 0){
             printf("Key: %d is inserted in Index Root Noode with block ID: %d\n", record.id, root_block_id);
         }
-
         
         // tora ftiaxnoume ta duo DataNodes pou tha deixnoun ta pointers ths root
         BF_Block* left_data_block;
@@ -341,7 +340,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
-    BF_Block_Destroy(block)
+    BF_Block_Destroy(&block);
 
     return curr_block;
     
