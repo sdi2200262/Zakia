@@ -280,43 +280,48 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     //upoloipes periptoseis
     printf("\n--------------------------------------------------------\n");
     printf("\neimaste stis upoloipes periptoseis ektos tis rizas META TO if()\n\n");
+    
     //dimiourgoume neo block
     BF_Block* block;
     BF_Block_Init(&block);
     CALL_BF(BF_AllocateBlock(file_desc, block));
 
-   
     //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
     //eisagogi eggrafisn
-    int curr_node = bplus_info->root_block_id;
+    int root_id = bplus_info->root_block_id;
+    CALL_BF(BF_GetBlock(file_desc, root_id, block)); 
     int curr_level=0;
 
-    printf("bainoume sto while curr_node = %d and curr_level = 0\n\n", curr_node);
+    int leaf_block_id;
+    printf("bainoume sto curr_level = 0\n\n");
     
+
     //perase apo olous tous index nodes sto sosto path
     while(curr_level <= bplus_info->tree_height -1){
         printf("mesa stin while ( prin to GetBlock ):\n");
 
         //bres pointer gia curr node
-        CALL_BF(BF_GetBlock(file_desc, 0, block));
+        int curr_block = find_next_Node(block,record.id);
         
-
+        CALL_BF(BF_GetBlock(file_desc, curr_block, block));
+        
         printf("mesa stin while ( META to GetBlock ):\n");
-        printf("curr_node = %d and curr_level = %d\n", curr_node, curr_level);
 
-        //bres to sosto path gia to epomeno node kai kane update to curr node
-        curr_node = find_next_Node(block,record.id);
-        
         //unpin unused block
         BF_UnpinBlock(block);
         curr_level++;
+        if(curr_level == bplus_info->tree_height){
+            leaf_block_id = curr_block;
+        }
+
     }
 
+
     printf("\n--------------------------------------------------------\n");
-    printf("Bghkame apo tin while kai exoume curr_block = %d and curr_level = %d", curr_node, curr_level);
+    printf("Bghkame apo tin while kai exoume curr_block = %d and curr_level = %d",leaf_block_id, curr_level);
     
     //otan ftasoume se node fullo pare pointer gia to block
-    BF_GetBlock(file_desc, curr_node, block);
+    BF_GetBlock(file_desc, leaf_block_id, block);
 
     //pleon to block ine ena leaf data node
 
@@ -337,7 +342,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
 
-    return curr_node;
+    return leaf_block_id;
     
 }
     
