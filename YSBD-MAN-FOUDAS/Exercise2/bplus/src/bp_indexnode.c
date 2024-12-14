@@ -55,7 +55,6 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    node->keys[i] = key;
    node->keys_counter++;
 
-   printf("thesi: %d, key:%d\n" , i ,node->keys[i]);
    return 0;
 }
 
@@ -85,8 +84,6 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
    node->pointers[i] = new_block_id;
    node->pointers_counter++;
 
-   printf("thesi: %d, pointer: %d\n" , i ,node->pointers[i]);
-
    return 0;
 }
    
@@ -105,18 +102,3 @@ int find_next_Node(BF_Block* block, int key) {
    return node->pointers[node->pointers_counter - 1];
 }
 
-int debug(BF_Block* block){
-   IndexNode* node = (IndexNode*)BF_Block_GetData(block);
-
-   printf("To block auto exei:\n");
-   printf("keys counter: %d\npointers counter: %d\n\n", node->keys_counter, node->pointers_counter);
-
-   for(int i =0; i< node->keys_counter;i++){
-      printf("%d ", node->keys[i]);
-   }
-   printf("\n");
-   for(int i =0; i< node->pointers_counter;i++){
-      printf("%d ", node->pointers[i]);
-   }
-   return 0;
-}

@@ -115,7 +115,7 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
      
     // Close file at BF level
     CALL_BF(BF_CloseFile(file_desc));
-    printf("\nClosed File (BP_CloseFile works\n");
+    printf("\nClosed File with file_desc: %d (BP_CloseFile works)\n", file_desc);
     return 0;
 }
 
@@ -159,7 +159,9 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         
         int left_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &left_data_block_id));
-        insert_pointer_to_IndexNode(root_block, left_data_block_id);
+        if(insert_pointer_to_IndexNode(root_block, left_data_block_id) == 0){
+            printf("Index Root Node me block ID %d pire pointer me id %d\n", root_block_id, left_data_block_id);
+        }
 
         //right data block
         BF_Block* right_data_block;
@@ -169,7 +171,9 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         int right_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &right_data_block_id));
-        insert_pointer_to_IndexNode(root_block, right_data_block_id);
+        if(insert_pointer_to_IndexNode(root_block, right_data_block_id) == 0){
+            printf("Index Root Node me block ID %d pire pointer me id %d\n", root_block_id, right_data_block_id);
+        }
         
 
         //tora exoume etoimo to index node tou root kai ta duo pointers
@@ -236,8 +240,6 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
         CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
-
-        debug(tmpblock);
 
         //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
         curr_block = find_next_Node(tmpblock,record.id);

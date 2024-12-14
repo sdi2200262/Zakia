@@ -33,5 +33,4 @@ int insert_key_to_IndexNode(BF_Block* block, int key);
 int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id);
 int find_next_Node(BF_Block* block, int key);
 
-int debug(BF_Block* block);
 #endif
