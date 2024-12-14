@@ -267,11 +267,10 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     //kai kane insert sto leaf node to key
     if(insert_record_to_DataNode(block, &record) == 0){
-        printf("\nDeftero Insert doulepse\n");
+        printf("Data Node me block ID %d pire key me value %d \n",curr_block, record.id);
     }
     
     if(insert_record_to_DataNode(block, &record) == recs_size){
-
         printf("\nto data node me id %d foulare\n",curr_block);
         //splitarisma
         return 0;

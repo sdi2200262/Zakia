@@ -40,8 +40,11 @@ int insert_record_to_DataNode(BF_Block* block, Record* record){
     // elegxoume an to id apo to record eisodou uparxei hdh sto block
     for (int i = 0; i < node->recs_counter; i++) {
         
+        // debug
+        printf("recs[%d].id = %d ",i,node->recs[i].id);
+
         if (node->recs[i].id == record->id) {
-            printf("Duplicate found!\n\n");
+            printf("\nDuplicate found!\n\n");
             // Duplicate key not allowed
             return -1;
         }
