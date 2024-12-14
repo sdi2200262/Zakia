@@ -55,13 +55,7 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    node->keys[i] = key;
    node->keys_counter++;
 
-   printf("\ninsrert key to index node works....\n\n");
-   printf("%d %d\n" , i ,node->keys[i]);
-
-   for(int j=0; j<keys_size; j++){
-      printf("%d " , node->keys[j]);
-   }
-   printf("\n");
+   printf("thesi: %d, key:%d\n" , i ,node->keys[i]);
    return 0;
 }
 
@@ -91,12 +85,8 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
    node->pointers[i] = new_block_id;
    node->pointers_counter++;
 
-   printf("%d %d\n" , i ,node->pointers[i]);
+   printf("thesi: %d, pointer: %d\n" , i ,node->pointers[i]);
 
-   for(int j=0; j<pointers_size; j++){
-      printf("%d " , node->pointers[j]);
-   }
-   printf("\n");
    return 0;
 }
    
@@ -111,9 +101,6 @@ int find_next_Node(BF_Block* block, int key) {
          return node->pointers[i];
       }
    }
-
-   printf("\nPointers_counter is returned in find_next_Node which is: %d\n", node->pointers_counter);
-
    // If the key is larger than all keys, return the last pointer
    return node->pointers[node->pointers_counter - 1];
 }

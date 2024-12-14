@@ -30,35 +30,6 @@ typedef struct {
 
 static OpenFileEntry open_files[MAXOPENFILES];
 
-// Initialize open files array
-/*
-void initOpenFilesArray() {
-    
-    static int initialized = 0;     //check an ine already initialized
-
-    if (!initialized) {
-        for (int i = 0; i < MAXOPENFILES; i++) {
-            open_files[i].is_open = 0;      //set slot open
-            open_files[i].file_desc = -1;       //
-            open_files[i].filename[0] = '\0';
-            open_files[i].info = NULL;
-        }
-        initialized = 1;        //mark as initialized
-    }
-}
-
-// Find a free slot in open files array
-int findFreeFileSlot() {
-    initOpenFilesArray();
-    for (int i = 0; i < MAXOPENFILES; i++) {
-        if (!open_files[i].is_open) {
-            return i;
-        }
-    }
-    return -1;
-}
-*/
-
 
 // BP_CreateFile implementation
 int BP_CreateFile(char *fileName) {
@@ -108,19 +79,9 @@ int BP_CreateFile(char *fileName) {
 // BP_OpenFile implementation
 BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     
-    //initOpenFilesArray();
-    
     // Anoigma arxeiou se epipedo Block
     BF_OpenFile(fileName, file_desc);
 
-    /*
-    // Find a free slot in open files array
-    int slot = findFreeFileSlot();
-    if (slot == -1) {
-        BF_CloseFile(*file_desc);
-        return NULL;
-    }
-    */
     
     // Read first block (metadata)
     BF_Block *block;
@@ -135,15 +96,7 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
 
     BF_UnpinBlock(block);
     BF_Block_Destroy(&block);
-    /*
-    // Update open files array
-    open_files[slot].is_open = 1;       //kleise auto to slot
-    open_files[slot].file_desc = *file_desc;    // update file_desc
-    strcpy(open_files[slot].filename, fileName);    // update fileName
-    open_files[slot].info = bplus_info;     // update ta metadata
-    */
-    //BF_Close();
-
+    
     printf("\nOpened file with name: %s (BP_OpenFile works)\n\n", fileName);
     return bplus_info;
 }
@@ -155,37 +108,11 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     BF_Block_Init(&block);
     CALL_BF(BF_GetBlock(file_desc, 0, block));
 
-    /*
-    // Find the file in open files array
-    int slot = -1;
-    for (int i = 0; i < MAXOPENFILES; i++) {
-        if (open_files[i].file_desc == file_desc) {
-            slot = i;
-            break;
-        }
-    }
-    
-    // to file den itan anoixto h de brethike
-    if (slot == -1) {
-        printf("\nClose File returned -1\nFile is already closed or doesnt exist\n");
-        return -1;
-    }
-    */
-
     BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
     BF_Block_Destroy(&block);
     free(info);
      
-   /*
-    free(open_files[slot].info);
-    open_files[slot].is_open = 0;
-    open_files[slot].file_desc = -1;
-    open_files[slot].filename[0] = '\0';
-    open_files[slot].info = NULL;
-    
-   */
-
     // Close file at BF level
     CALL_BF(BF_CloseFile(file_desc));
     printf("\nClosed File (BP_CloseFile works\n");
@@ -200,50 +127,50 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     // periptosi pou to dedro ine adeio kai den uparxei riza
     if (bplus_info->tree_height==-1){
 
+        // dimiourgoume to root block me ID = 2 giati to metadata block exei ID=1
         BF_Block* root_block;
         BF_Block_Init(&root_block);      
-        CALL_BF(BF_AllocateBlock(file_desc, root_block));   
-        memset(BF_Block_GetData(root_block), 0, BF_BLOCK_SIZE);
- 
+        CALL_BF(BF_AllocateBlock(file_desc, root_block));  
 
+        // kratame to root_block_id gia na to baloume sta metadata
         int root_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &root_block_id));
         root_block_id--;
+
         printf("\n\nAdeio tree - bazoume riza me ID: %d kai key: %d \n", root_block_id, record.id);
 
         // ine to proto entry tou dedrou ara tha baloume ena IndexNode me to record.id 
         // kai 2 DataNodes to ena adeio kai to allo me to record
         if (init_IndexNode(root_block)==0){               
-            printf("Index Root Node with block ID %d is initialized.\n", root_block_id);
+            printf("Index Root Node me block ID %d init.\n", root_block_id);
         }
 
         //bazume to record.id sto root IndexNode
         if(insert_key_to_IndexNode(root_block, record.id) == 0){
-            printf("Key: %d is inserted in Index Root Noode with block ID: %d\n", record.id, root_block_id);
-            debug(root_block);
+            printf("Index Root Node me block ID %d pire key me value %d\n", root_block_id, record.id);
         }
         
         // tora ftiaxnoume ta duo DataNodes pou tha deixnoun ta pointers ths root
+        //left data block
         BF_Block* left_data_block;
         BF_Block_Init(&left_data_block);
         CALL_BF(BF_AllocateBlock(file_desc, left_data_block));
-        memset(BF_Block_GetData(left_data_block), 0, BF_BLOCK_SIZE);
 
         
         int left_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &left_data_block_id));
         insert_pointer_to_IndexNode(root_block, left_data_block_id);
 
+        //right data block
         BF_Block* right_data_block;
         BF_Block_Init(&right_data_block);
         CALL_BF(BF_AllocateBlock(file_desc, right_data_block));
-        memset(BF_Block_GetData(right_data_block), 0, BF_BLOCK_SIZE);
 
 
         int right_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &right_data_block_id));
         insert_pointer_to_IndexNode(root_block, right_data_block_id);
-        debug(root_block);
+        
 
         //tora exoume etoimo to index node tou root kai ta duo pointers
         //meta prepei na kanoume init ta duo data nodes
@@ -251,15 +178,15 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         // to left_data_node tha ine adeio alla o deiktis tou prepei na deixnei sto right_data_node
         if(init_DataNode(left_data_block)==0){
             insert_pointer_to_DataNode(left_data_block,right_data_block_id);           
-            printf("\nInited DataNode with id: %d\n", left_data_block_id);
-            printf("Inserted pointer with value: %d to DataNode with id: %d\n", right_data_block_id, left_data_block_id);
+            printf("\nData Node me block ID %d init.\n", left_data_block_id);
+            printf("Data Node me block ID %d pire pointer %d\n", left_data_block_id, right_data_block_id);
         }   
 
         // to right_data_node tha periexei to record pou exei record.id to idio me to key tou root
         if(init_DataNode(right_data_block)==0){
             insert_record_to_DataNode(right_data_block, &record);
-            printf("\nInted DataNode with id: %d\n", right_data_block_id);
-            printf("Inserted record with record.id: %d to DataNode with id: %d\n", record.id, right_data_block_id);
+            printf("\nData Node me block ID %d init.\n", right_data_block_id);
+            printf("Data Node me block ID %d pire record %d\n", right_data_block_id, record.id);
         }    
 
         //update bplus info
@@ -268,7 +195,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         bplus_info->total_record_counter++;                 //auksanoume to total record  counter
 
         printf("\nbplus info updated.......\n");
-        printf("height = %d\n\n" , bplus_info->tree_height);
+        printf("updated height to: %d\n\n" , bplus_info->tree_height);
+
         //kaname allages sta blocks ara set dirty kai unpin gia na graftei sto disko
         BF_Block_SetDirty(root_block);
         BF_UnpinBlock(root_block);
@@ -289,60 +217,46 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     //upoloipes periptoseis
     printf("\n--------------------------------------------------------\n");
-    printf("\neimaste stis upoloipes periptoseis ektos tis rizas META TO if()\n\n");
     
-
     //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
     //eisagogi eggrafis
     int curr_block = bplus_info->root_block_id;
     int curr_level=0;
-    printf("bainoume sto while me:\n    curr_level = 0\n    curr_block = %d\n\n", curr_block);
-    
+
     //gia debugging
-    int i;
+    
     printf("\n\n");
     //perase apo olous tous index nodes sto sosto path
     while(curr_level < bplus_info->tree_height -1){
-        BF_Block* block;
-        BF_Block_Init(&block);
-        CALL_BF(BF_AllocateBlock(file_desc, block));
-        memset(BF_Block_GetData(block), 0, BF_BLOCK_SIZE);
-
-
-        i++;
-        printf("\nmesa stin while (i = %d)\n",i);
         
-        printf("curr_block is %d\n",curr_block);
+        //dimiourgoume ena temp block gia tin prospelasi tou dedrou
+        BF_Block* tmpblock;
+        BF_Block_Init(&tmpblock);
+        CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
+
         //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
-        CALL_BF(BF_GetBlock(file_desc, curr_block, block));
+        CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
 
-        printf("Kalesame tin GetBlock...\n");
-        debug(block);
+        debug(tmpblock);
+
         //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
-        curr_block = find_next_Node(block,record.id);
-        
-        printf("h find_next_Node epestrepse to epomeno block na exei id: %d\n",curr_block );
-        
-        printf("mesa stin while ( META to GetBlock ):\n");
+        curr_block = find_next_Node(tmpblock,record.id);
 
-        // de thelei block destroy edo
         curr_level++;
-        (BF_Block_SetDirty(block));
-        CALL_BF(BF_UnpinBlock(block));
-        BF_Block_Destroy(&block);
+
+        //diagrafoume to tmp block se kathe iteration
+        BF_Block_SetDirty(tmpblock);
+        BF_UnpinBlock(tmpblock);
+        BF_Block_Destroy(&tmpblock);
     }
+
+    // dimiourgoume neo block pointer gia na deixnei sto data node sto opoio
+    // eftase telika h prospelasi 
     BF_Block* block;
     BF_Block_Init(&block);
     CALL_BF(BF_AllocateBlock(file_desc, block));
-    memset(BF_Block_GetData(block), 0, BF_BLOCK_SIZE);
-
-
-
-
-    printf("\n--------------------------------------------------------\n");
-    printf("Bghkame apo tin while kai exoume curr_block = %d and curr_level = %d",curr_block, curr_level);
     
-    //otan ftasoume se node fullo pare pointer gia to block
+    // h get block tha deiksei to neo block pointer sto sosto data node
     BF_GetBlock(file_desc, curr_block, block);
 
     //pleon to block ine ena leaf data node
@@ -353,7 +267,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     }
     
     if(insert_record_to_DataNode(block, &record) == recs_size){
-        printf("\nto root foulare!\n");
+
+        printf("\nto data node me id %d foulare\n",curr_block);
         //splitarisma
         return 0;
     }
@@ -365,7 +280,6 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     BF_Block_Destroy(&block);
 
     return curr_block;
-    
 }
     
 
