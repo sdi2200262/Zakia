@@ -266,15 +266,26 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     //pleon to block ine ena leaf data node
 
     //kai kane insert sto leaf node to key
-    if(insert_record_to_DataNode(block, &record) == 0){
-        printf("Data Node me block ID %d pire key me value %d \n",curr_block, record.id);
-    }
     
-    if(insert_record_to_DataNode(block, &record) == recs_size){
-        printf("\nto data node me id %d foulare\n",curr_block);
-        //splitarisma
-        return 0;
+
+    int result = insert_record_to_DataNode(block, &record);
+
+    switch (result) {
+        case 0:
+            printf("Data Node me block ID %d pire key me value %d \n", curr_block, record.id);
+            break;
+
+        case recs_size:
+            printf("\nto data node me id %d foulare\n", curr_block);
+            // splitarisma
+            return 0;
+
+        default:
+            // Handle other cases if needed
+            printf("Unhandled result: %d\n", result);
+            break;
     }
+
 
     bplus_info->total_record_counter++;
 
