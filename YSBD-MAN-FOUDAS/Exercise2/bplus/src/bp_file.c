@@ -159,6 +159,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         
         int left_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &left_data_block_id));
+        left_data_block_id--;
         if(insert_pointer_to_IndexNode(root_block, left_data_block_id) == 0){
             printf("Index Root Node me block ID %d pire pointer me id %d\n", root_block_id, left_data_block_id);
         }
@@ -171,6 +172,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         int right_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &right_data_block_id));
+        right_data_block_id--;
         if(insert_pointer_to_IndexNode(root_block, right_data_block_id) == 0){
             printf("Index Root Node me block ID %d pire pointer me id %d\n", root_block_id, right_data_block_id);
         }
