@@ -70,7 +70,6 @@ int BP_CreateFile(char *fileName) {
     // Try to create the file using BF level
     int file_desc;
     BF_Block *block;
-    
     BF_Block_Init(&block);
     
     CALL_BF(BF_CreateFile(fileName)); 
@@ -98,7 +97,6 @@ int BP_CreateFile(char *fileName) {
     
     // kleise to fakelo
     CALL_BF(BF_CloseFile(file_desc));
-    BF_Close();
 
     //apodesmeuse to allocated block giati graftike sto disko
     BF_Block_Destroy(&block);
@@ -112,7 +110,7 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     
     //initOpenFilesArray();
     
-    // Open file at BF level
+    // Anoigma arxeiou se epipedo Block
     BF_OpenFile(fileName, file_desc);
 
     /*
@@ -131,8 +129,12 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     
     // Copy metadata
     BPLUS_INFO* bplus_info = malloc(sizeof(BPLUS_INFO));
-    memcpy(bplus_info, BF_Block_GetData(block), sizeof(BPLUS_INFO));
+    char* data = BF_Block_GetData(block);
+    memcpy(bplus_info, data, sizeof(BPLUS_INFO));
     
+
+    BF_UnpinBlock(block);
+    BF_Block_Destroy(&block);
     /*
     // Update open files array
     open_files[slot].is_open = 1;       //kleise auto to slot
@@ -140,22 +142,19 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     strcpy(open_files[slot].filename, fileName);    // update fileName
     open_files[slot].info = bplus_info;     // update ta metadata
     */
-    
-    // Unpin block
-    BF_UnpinBlock(block);
-    BF_Block_Destroy(&block);
-    BF_Close();
+    //BF_Close();
 
     printf("\nOpened file with name: %s (BP_OpenFile works)\n\n", fileName);
-
-    
-    
     return bplus_info;
 }
 
 // BP_CloseFile implementation
 int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     
+    BF_Block* block;
+    BF_Block_Init(&block);
+    CALL_BF(BF_GetBlock(file_desc, 0, block));
+
     /*
     // Find the file in open files array
     int slot = -1;
@@ -172,14 +171,12 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
         return -1;
     }
     */
-    
-    
-    // Close file at BF level
-    CALL_BF(BF_CloseFile(file_desc));
+
+    BF_Block_SetDirty(block);
+    BF_UnpinBlock(block);
+    BF_Block_Destroy(&block);
     free(info);
-    
-    // Free metadata and reset slot
-   
+     
    /*
     free(open_files[slot].info);
     open_files[slot].is_open = 0;
@@ -189,8 +186,9 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     
    */
 
+    // Close file at BF level
+    CALL_BF(BF_CloseFile(file_desc));
     printf("\nClosed File (BP_CloseFile works\n");
-    
     return 0;
 }
 
@@ -203,10 +201,10 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     if (bplus_info->tree_height==-1){
 
         BF_Block* root_block;
-        
         BF_Block_Init(&root_block);      
-
-        CALL_BF(BF_AllocateBlock(file_desc, root_block));    
+        CALL_BF(BF_AllocateBlock(file_desc, root_block));   
+        memset(BF_Block_GetData(root_block), 0, BF_BLOCK_SIZE);
+ 
 
         int root_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &root_block_id));
@@ -222,12 +220,15 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         //bazume to record.id sto root IndexNode
         if(insert_key_to_IndexNode(root_block, record.id) == 0){
             printf("Key: %d is inserted in Index Root Noode with block ID: %d\n", record.id, root_block_id);
+            debug(root_block);
         }
         
         // tora ftiaxnoume ta duo DataNodes pou tha deixnoun ta pointers ths root
         BF_Block* left_data_block;
         BF_Block_Init(&left_data_block);
         CALL_BF(BF_AllocateBlock(file_desc, left_data_block));
+        memset(BF_Block_GetData(left_data_block), 0, BF_BLOCK_SIZE);
+
         
         int left_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &left_data_block_id));
@@ -236,10 +237,13 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         BF_Block* right_data_block;
         BF_Block_Init(&right_data_block);
         CALL_BF(BF_AllocateBlock(file_desc, right_data_block));
+        memset(BF_Block_GetData(right_data_block), 0, BF_BLOCK_SIZE);
+
 
         int right_data_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &right_data_block_id));
         insert_pointer_to_IndexNode(root_block, right_data_block_id);
+        debug(root_block);
 
         //tora exoume etoimo to index node tou root kai ta duo pointers
         //meta prepei na kanoume init ta duo data nodes
@@ -267,13 +271,17 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         printf("height = %d\n\n" , bplus_info->tree_height);
         //kaname allages sta blocks ara set dirty kai unpin gia na graftei sto disko
         BF_Block_SetDirty(root_block);
-        //BF_UnpinBlock(root_block);
+        BF_UnpinBlock(root_block);
 
         BF_Block_SetDirty(right_data_block);
-        //BF_UnpinBlock(right_data_block);
+        BF_UnpinBlock(right_data_block);
 
         BF_Block_SetDirty(left_data_block);
-        //BF_UnpinBlock(left_data_block);
+        BF_UnpinBlock(left_data_block);
+
+        BF_Block_Destroy(&root_block);
+        BF_Block_Destroy(&right_data_block);
+        BF_Block_Destroy(&left_data_block);
 
         return right_data_block_id;  
     }
@@ -283,10 +291,6 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     printf("\n--------------------------------------------------------\n");
     printf("\neimaste stis upoloipes periptoseis ektos tis rizas META TO if()\n\n");
     
-    //dimiourgoume neo block
-    BF_Block* block;
-    BF_Block_Init(&block);
-    CALL_BF(BF_AllocateBlock(file_desc, block));
 
     //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
     //eisagogi eggrafis
@@ -296,9 +300,15 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     
     //gia debugging
     int i;
-
+    printf("\n\n");
     //perase apo olous tous index nodes sto sosto path
     while(curr_level <= bplus_info->tree_height -1){
+        BF_Block* block;
+        BF_Block_Init(&block);
+        CALL_BF(BF_AllocateBlock(file_desc, block));
+        memset(BF_Block_GetData(block), 0, BF_BLOCK_SIZE);
+
+
         i++;
         printf("\nmesa stin while (i = %d)\n",i);
         
@@ -317,8 +327,15 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         // de thelei block destroy edo
         curr_level++;
-
+        (BF_Block_SetDirty(block));
+        CALL_BF(BF_UnpinBlock(block));
+        BF_Block_Destroy(&block);
     }
+    BF_Block* block;
+    BF_Block_Init(&block);
+    CALL_BF(BF_AllocateBlock(file_desc, block));
+    memset(BF_Block_GetData(block), 0, BF_BLOCK_SIZE);
+
 
 
 
@@ -343,8 +360,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     bplus_info->total_record_counter++;
 
-    BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
+    BF_Block_SetDirty(block);
     BF_Block_Destroy(&block);
 
     return curr_block;
