@@ -51,7 +51,7 @@ void insertEntries(){
   }
   */
 
-  //bazume riza 
+  //bazume riza
   record = randomRecord();
   int first_entry=record.id;
   first_entry = BP_InsertEntry(file_desc,info,record);
