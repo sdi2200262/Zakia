@@ -208,7 +208,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         int root_block_id;
         CALL_BF(BF_GetBlockCounter(file_desc , &root_block_id));
-
+        root_block_id--;
         printf("\n\nAdeio tree - bazoume riza me ID: %d kai key: %d \n", root_block_id, record.id);
 
         // ine to proto entry tou dedrou ara tha baloume ena IndexNode me to record.id 
@@ -302,7 +302,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     int i;
     printf("\n\n");
     //perase apo olous tous index nodes sto sosto path
-    while(curr_level <= bplus_info->tree_height -1){
+    while(curr_level < bplus_info->tree_height -1){
         BF_Block* block;
         BF_Block_Init(&block);
         CALL_BF(BF_AllocateBlock(file_desc, block));
