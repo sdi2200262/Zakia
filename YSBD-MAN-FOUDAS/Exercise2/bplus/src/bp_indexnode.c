@@ -109,3 +109,9 @@ int find_next_Node(BF_Block* block, int key) {
    return node->pointers[node->pointers_counter - 1];
 }
 
+int find_leftest_Node(BF_Block* block) {
+    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+
+   //epistrefei ton pio aristera komvo
+   return node->pointers[0];
+}

@@ -80,7 +80,6 @@ int insert_pointer_to_DataNode( BF_Block* block, int new_block_id, int parent_bl
 
 int debug(BF_Block* block){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
-
     for(int i =0; i < node->recs_counter; i++){
         printf("%d ",node->recs[i].id);
     }
@@ -88,7 +87,7 @@ int debug(BF_Block* block){
     return 0;
 }
 
-int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id){
+int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id, Record rec){
     DataNode* old_node = (DataNode*)BF_Block_GetData(block);
     
     DataNode* new_node = (DataNode*)BF_Block_GetData(new_block);
@@ -126,9 +125,15 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     //update to parent_id tou new_data_node
     new_node->parent_id = old_node->parent_id;
 
+    //kalese tin insert_record_to_DataNode gia to swsto node ( old_node h new_node )
+    if( rec.id > new_node->recs[0].id ){    //check an ine na mpei sto new_node
+        insert_record_to_DataNode(new_block , &rec);
+    }
+    else{
+        insert_record_to_DataNode(block , &rec);
+    }
     //vale to proto record.id tou new_data_node na ine neo key ston gonea index_node
     //kalese tin insert_key_to_IndexNode
-    
     *new_index_key = new_node->recs[0].id;
     BF_Block* parent_block;
     BF_Block_Init(&parent_block);

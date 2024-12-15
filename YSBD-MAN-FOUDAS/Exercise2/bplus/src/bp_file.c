@@ -291,7 +291,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
             
             int new_index_key;
             int new_block_id;
-            if (split_DataNode(file_desc, block, new_block, &new_index_key, &new_block_id)==0){
+            if (split_DataNode(file_desc, block, new_block, &new_index_key, &new_block_id, record)==0){
                 printf("\nto data node me id %d foulare\n", curr_block);
                 printf("\ndimiourgithike neo block me id %d\n",new_block_id);
                 printf("\no goneas tou neou block pire neo index key %d\n", new_index_key);
@@ -326,6 +326,62 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     return curr_block;
 }
     
+int BP_print(int file_desc, BPLUS_INFO* bplus_info){
+    
+    int curr_block = bplus_info->root_block_id;
+    int curr_level=0;
+
+    //gia debugging
+    
+    //perase apo olous tous index nodes sto pio aristero leaf node
+    while(curr_level < bplus_info->tree_height -1){
+        
+        //dimiourgoume ena temp block gia tin prospelasi tou dedrou
+        BF_Block* tmpblock;
+        BF_Block_Init(&tmpblock);
+        CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
+
+        //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
+        CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
+
+        //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
+        curr_block = find_leftest_Node(tmpblock);
+
+        curr_level++;
+
+        //diagrafoume to tmp block se kathe iteration
+        BF_Block_SetDirty(tmpblock);
+        BF_UnpinBlock(tmpblock);
+        BF_Block_Destroy(&tmpblock);
+    }
+
+    // dimiourgoume neo block pointer gia na deixnei sto data node sto opoio
+    // eftase telika h prospelasi 
+    BF_Block* tmpblock;
+    BF_Block_Init(&tmpblock);
+    CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
+    
+    // h get block tha deiksei to neo block pointer sto sosto data node
+    BF_GetBlock(file_desc, curr_block, tmpblock);
+
+    DataNode* tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
+    while(tmpnode->next_data_node!=-1){
+        
+        for(int i=0; i < tmpnode->recs_counter; i++){
+            printf("%d ", tmpnode->recs[i].id);
+        }
+        printf("\n\n");
+
+        int next;
+        next = tmpnode->next_data_node;
+        BF_GetBlock(file_desc, next, tmpblock);
+        tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
+    }
+
+    return 0;
+}
+    
+
 
 /*
 // BP_GetEntry implementation

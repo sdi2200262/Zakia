@@ -54,6 +54,6 @@ int BP_InsertEntry(int file_desc,BPLUS_INFO* bplus_info, Record record);
 int BP_GetEntry(int file_desc, BPLUS_INFO* header_info, int id, Record** result);
 
 
-
+int BP_print(int file_desc,BPLUS_INFO* bplus_info);
 
 #endif 

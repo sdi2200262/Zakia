@@ -83,6 +83,8 @@ void insertEntries(){
     
   }
   
+  printf("\n--------------------------------------------------------------------------------------\n");
+  BP_print(file_desc, info);
 
   BP_CloseFile(file_desc,info);
   BF_Close();
