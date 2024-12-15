@@ -55,6 +55,11 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    node->keys[i] = key;
    node->keys_counter++;
 
+   for(int i =0; i <node->keys_counter; i++){
+      printf("%d ", node->keys[i]);
+   }
+   printf("\n");
+
    return 0;
 }
 
