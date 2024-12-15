@@ -326,60 +326,69 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     return curr_block;
 }
     
-int BP_print(int file_desc, BPLUS_INFO* bplus_info){
-    
+int BP_print(int file_desc, BPLUS_INFO* bplus_info) {
     int curr_block = bplus_info->root_block_id;
-    int curr_level=0;
+    int curr_level = 0;
 
-    //gia debugging
-    
-    //perase apo olous tous index nodes sto pio aristero leaf node
-    while(curr_level < bplus_info->tree_height -1){
-        
-        //dimiourgoume ena temp block gia tin prospelasi tou dedrou
+    // Traverse to the leftmost leaf node
+    while (curr_level < bplus_info->tree_height - 1) {
+        // Initialize a temporary block
         BF_Block* tmpblock;
         BF_Block_Init(&tmpblock);
-        CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
-
-        //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
+        
         CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
 
-        //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
+        // Find the leftmost pointer for the current index node
         curr_block = find_leftest_Node(tmpblock);
 
-        curr_level++;
+        if (curr_block == -1) {
+            // Error in find_leftest_Node, terminate
+            BF_UnpinBlock(tmpblock);
+            BF_Block_Destroy(&tmpblock);
+            printf("Error: Failed to traverse to the leftmost node.\n");
+            return -1;
+        }
 
-        //diagrafoume to tmp block se kathe iteration
-        BF_Block_SetDirty(tmpblock);
+        curr_level++;
+        
+        // Clean up the temporary block
         BF_UnpinBlock(tmpblock);
         BF_Block_Destroy(&tmpblock);
     }
 
-    // dimiourgoume neo block pointer gia na deixnei sto data node sto opoio
-    // eftase telika h prospelasi 
+    // Print records from the leftmost data node
     BF_Block* tmpblock;
     BF_Block_Init(&tmpblock);
-    CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
+    CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
     
-    // h get block tha deiksei to neo block pointer sto sosto data node
-    BF_GetBlock(file_desc, curr_block, tmpblock);
-
     DataNode* tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
-    while(tmpnode->next_data_node!=-1){
-        
-        for(int i=0; i < tmpnode->recs_counter; i++){
+
+    // Traverse through the linked data nodes
+    while (tmpnode->next_data_node != -1) {
+        for (int i = 0; i < tmpnode->recs_counter; i++) {
             printf("%d ", tmpnode->recs[i].id);
         }
-        printf("\n\n");
+        printf("\n");
 
-        int next;
-        next = tmpnode->next_data_node;
-        BF_GetBlock(file_desc, next, tmpblock);
+        // Move to the next data node
+        int next = tmpnode->next_data_node;
+        CALL_BF(BF_GetBlock(file_desc, next, tmpblock));
         tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
     }
 
+    // Print records from the last data node
+    for (int i = 0; i < tmpnode->recs_counter; i++) {
+        printf("%d ", tmpnode->recs[i].id);
+    }
+    printf("\n");
+
+    // Clean up
+    BF_UnpinBlock(tmpblock);
+    BF_Block_Destroy(&tmpblock);
+
     return 0;
 }
+
     
 
 
