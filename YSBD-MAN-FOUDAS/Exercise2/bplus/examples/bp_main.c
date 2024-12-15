@@ -52,18 +52,31 @@ void insertEntries(){
   */
 
   //bazume riza
-  record = randomRecord();
+  record = randomRecord(0);
   int first_entry=record.id;
   printf("First entry is: %d\n", first_entry);
   first_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nFirst entry with id: %d, completed in block  with id :%d\n", record.id, first_entry);
 
   //bazoume deftero record
-  record = randomRecord();
+  record = randomRecord(0);
   int second_entry=record.id;
   printf("Second entry is: %d\n", second_entry);
   second_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nSecond entry with id: %d , completed in block with id: %d\n", record.id , second_entry);
+
+  record = randomRecord(100);
+  int third_entry=record.id;
+  printf("Third entry is: %d\n", third_entry);
+  third_entry = BP_InsertEntry(file_desc,info,record);
+  printf("\nThird entry with id: %d , completed in block with id: %d\n", record.id , third_entry);
+
+  record = randomRecord(150);
+  int fourth_entry=record.id;
+  printf("fourth entry is: %d\n", fourth_entry);
+  fourth_entry = BP_InsertEntry(file_desc,info,record);
+  printf("\nFourth entry with id: %d , completed in block with id: %d\n", record.id , fourth_entry);
+
 
   BP_CloseFile(file_desc,info);
   BF_Close();
