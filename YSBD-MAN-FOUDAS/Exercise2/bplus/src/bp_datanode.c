@@ -117,7 +117,8 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     // update to next_data_node pointer twn duo nodes
     new_node->next_data_node = old_node->next_data_node;
     int old_node_pointer;
-    old_node_pointer = BF_GetBlockCounter(file_desc, &old_node_pointer) - 1;
+    BF_GetBlockCounter(file_desc, &old_node_pointer);
+    old_node_pointer--;
     old_node->next_data_node = old_node_pointer;
 
     //update to parent_id tou new_data_node
