@@ -126,12 +126,7 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     new_node->parent_id = old_node->parent_id;
 
     //kalese tin insert_record_to_DataNode gia to swsto node ( old_node h new_node )
-    if( rec.id > new_node->recs[0].id ){    //check an ine na mpei sto new_node
-        insert_record_to_DataNode(new_block , &rec);
-    }
-    else{
-        insert_record_to_DataNode(block , &rec);
-    }
+    
     //vale to proto record.id tou new_data_node na ine neo key ston gonea index_node
     //kalese tin insert_key_to_IndexNode
     *new_index_key = new_node->recs[0].id;

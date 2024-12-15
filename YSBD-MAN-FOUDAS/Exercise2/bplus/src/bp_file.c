@@ -295,6 +295,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
                 printf("\nto data node me id %d foulare\n", curr_block);
                 printf("\ndimiourgithike neo block me id %d\n",new_block_id);
                 printf("\no goneas tou neou block pire neo index key %d\n", new_index_key);
+                BP_InsertEntry(file_desc, bplus_info, record);
             }
 
             //kane set dirty OLA ta blocks
