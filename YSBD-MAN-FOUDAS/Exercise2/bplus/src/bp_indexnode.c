@@ -91,6 +91,12 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_bl
    }
    node->parent_id = parent_block_id;
 
+   for(int i =0; i <node->pointers_counter; i++){
+      printf("%d ", node->pointers[i]);
+   }
+   printf("\n");
+
+
    return 0;
 }
    
