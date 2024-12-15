@@ -98,35 +98,37 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
    return 0;
 }
 
-int insert_split_pointer_to_IndexNode(BF_Block* block, int new_block_id, int split_block_id){
-   IndexNode* node = (IndexNode* )BF_Block_GetData(block);
-   
-   int pos = 0;
+#include <stdio.h>
 
-   //briskoume tin thesi tou block pou einai foul kai tha splittaristei
-   while (pos < node->pointers_counter && node->pointers[pos] != split_block_id) {
-      pos++;
-   }
+int insert_split_pointer_to_IndexNode(BF_Block* block, int new_block_id, int split_block_id) {
+    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+    
+    int pos = 0;
 
-   //check oti odos to block brethike
-   if (pos == node->pointers_counter) {
-      printf("Error: Split block ID %d not found in pointers array\n", split_block_id);
-      return -1;
-   }
+    while (pos < node->pointers_counter && node->pointers[pos] != split_block_id) {
+        pos++;
+    }
 
-   // shift olous tous pointers deksia apo auto to block mia thesi gia na xoresei to new block pointer
-   for (int i = node->pointers_counter; i > pos + 1; i--) {
-      node->pointers[i] = node->pointers[i - 1];
-   }
+    if (pos == node->pointers_counter) {
+        printf("Error: Split block ID %d not found in pointers array\n", split_block_id);
+        return -1;
+    }
 
-   //bazoume to newblock pointer mia thesi deksia apo to split block
-   node->pointers[pos + 1] = new_block_id;
-   for (int i = 0; i< node->pointers_counter; i++){
-      printf("%d " , node->pointers[i]);
-   }
-   printf("\n");
-   return 0; //great success!
+    if (node->pointers_counter >= pointers_size) {
+        printf("Error: Cannot insert new block. Pointers array is full.\n");
+        return -1;
+    }
+
+    for (int i = node->pointers_counter; i > pos + 1; i--) {
+        node->pointers[i] = node->pointers[i - 1];
+    }
+
+    node->pointers[pos + 1] = new_block_id;
+    node->pointers_counter++;
+
+    return 0; // Success
 }
+
 
 
 int set_parent_id_to_IndexNode(BF_Block* block, int parent_block_id){
