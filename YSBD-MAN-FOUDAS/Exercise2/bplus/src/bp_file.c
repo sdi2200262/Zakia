@@ -362,16 +362,18 @@ int BP_print(int file_desc, BPLUS_INFO* bplus_info) {
     CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
     
     DataNode* tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
+    printf("Block %d has: ",curr_block);
 
     // Traverse through the linked data nodes
     while (tmpnode->next_data_node != -1) {
+    
         for (int i = 0; i < tmpnode->recs_counter; i++) {
             printf("%d ", tmpnode->recs[i].id);
         }
-        printf("\n");
-
-        // Move to the next data node
         int next = tmpnode->next_data_node;
+        printf("\n");
+        printf("Block %d has: ", next);
+        // Move to the next data node
         CALL_BF(BF_GetBlock(file_desc, next, tmpblock));
         tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
     }
