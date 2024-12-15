@@ -89,7 +89,6 @@ int debug(BF_Block* block){
 }
 
 int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id){
-    // Access the old data node
     DataNode* old_node = (DataNode*)BF_Block_GetData(block);
     
     DataNode* new_node = (DataNode*)BF_Block_GetData(new_block);
@@ -115,10 +114,10 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     old_node->recs_counter = midpoint;
 
     // update to next_data_node pointer twn duo nodes
-    new_node->next_data_node = old_node->next_data_node;
     int old_node_pointer;
     BF_GetBlockCounter(file_desc, &old_node_pointer);
     old_node_pointer--;
+    new_node->next_data_node = old_node->next_data_node;
     old_node->next_data_node = old_node_pointer;
 
     //kratame new_block_id gia na to epistrepsei h BP_InserEntry;
