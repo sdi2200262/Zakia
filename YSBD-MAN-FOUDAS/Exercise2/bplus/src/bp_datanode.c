@@ -64,7 +64,9 @@ int insert_record_to_DataNode(BF_Block* block, Record* record){
     node->recs[i] = *record;
     node->recs_counter++;
 
-
+    for(int i=0; i < node->recs_counter; i++){
+        printf("%d ", node->recs[i].id);
+    }
     return 0;
 }
 
