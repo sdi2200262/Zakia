@@ -87,7 +87,7 @@ int debug(BF_Block* block){
     return 0;
 }
 
-int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id, Record rec){
+int split_DataNode(int file_desc, BPLUS_INFO* bplus_info, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id, Record rec){
     DataNode* old_node = (DataNode*)BF_Block_GetData(block);
     
     DataNode* new_node = (DataNode*)BF_Block_GetData(new_block);
@@ -125,8 +125,45 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     //update to parent_id tou new_data_node
     new_node->parent_id = old_node->parent_id;
 
-    //kalese tin insert_record_to_DataNode gia to swsto node ( old_node h new_node )
+    //vale to rec sto swsto node opos akribos stin insert 
+
+    //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
+    //eisagogi eggrafis
+    int curr_block = bplus_info->root_block_id;
+    int curr_level=0;
+
+    //perase apo olous tous index nodes sto sosto path
+    while(curr_level < bplus_info->tree_height -1){
+        
+        //dimiourgoume ena temp block gia tin prospelasi tou dedrou
+        BF_Block* tmpblock;
+        BF_Block_Init(&tmpblock);
+
+        //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
+        BF_GetBlock(file_desc, curr_block, tmpblock);
+
+        //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
+        curr_block = find_next_Node(tmpblock,rec.id);
+
+        curr_level++;
+
+        //diagrafoume to tmp block se kathe iteration
+        BF_Block_SetDirty(tmpblock);
+        BF_UnpinBlock(tmpblock);
+        BF_Block_Destroy(&tmpblock);
+    }
+
+    // dimiourgoume neo block pointer gia na deixnei sto data node sto opoio
+    // eftase telika h prospelasi 
+    BF_Block* tmpblock;
+    BF_Block_Init(&tmpblock);
     
+    // h get block tha deiksei to neo block pointer sto sosto data node
+    BF_GetBlock(file_desc, curr_block, tmpblock);
+    
+    insert_record_to_DataNode(tmpblock, &rec);
+    
+    //----------------------------------------------------------------------------------------------------------------------------------
     //vale to proto record.id tou new_data_node na ine neo key ston gonea index_node
     //kalese tin insert_key_to_IndexNode
     *new_index_key = new_node->recs[0].id;

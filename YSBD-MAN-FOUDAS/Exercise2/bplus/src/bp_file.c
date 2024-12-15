@@ -291,7 +291,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
             
             int new_index_key;
             int new_block_id;
-            if (split_DataNode(file_desc, block, new_block, &new_index_key, &new_block_id, record)==0){
+            if (split_DataNode(file_desc, bplus_info, block, new_block, &new_index_key, &new_block_id, record)==0){
                 printf("\nto data node me id %d foulare\n", curr_block);
                 printf("\ndimiourgithike neo block me id %d\n",new_block_id);
                 printf("\no goneas tou neou block pire neo index key %d\n", new_index_key);
