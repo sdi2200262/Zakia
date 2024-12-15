@@ -282,7 +282,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
             BF_Block_SetDirty(block);
             BF_Block_Destroy(&block);
             // splitarisma
-            return 0;
+            return recs_size;
 
         default:
             // Handle other cases if needed

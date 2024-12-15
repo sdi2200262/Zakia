@@ -73,7 +73,7 @@ void insertEntries(){
   printf("\nFourth entry with id: %d , completed in block with id: %d\n", record.id , fourth_entry);
 
 
-  for (int i = 5; i < RECORDS_NUM; i++)
+  for (int i = 0; i < RECORDS_NUM; i++)
   {
     record = randomRecord(0);
     int result;
