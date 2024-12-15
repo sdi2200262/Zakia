@@ -100,7 +100,7 @@ int find_next_Node(BF_Block* block, int key) {
 
    for (int i = 0; i < node->pointers_counter; i++) {
       // Check if the key is less than or equal to the current key
-      if (key <= node->keys[i]) {
+      if (key < node->keys[i]) {
          // Return the corresponding pointer
          return node->pointers[i];
       }

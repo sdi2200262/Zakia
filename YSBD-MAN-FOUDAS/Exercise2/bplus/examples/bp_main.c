@@ -43,7 +43,7 @@ void insertEntries(){
   BPLUS_INFO* info = BP_OpenFile(FILE_NAME, &file_desc);
   Record record;
   
-
+/*
   //bazume riza einai 383 tha bei deksia
   record = randomRecord(0);
   int first_entry=record.id;
@@ -72,10 +72,10 @@ void insertEntries(){
   fourth_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nFourth entry with id: %d , completed in block with id: %d\n", record.id , fourth_entry);
 
-
+*/
   for (int i = 0; i < 40; i++)
   {
-    record = randomRecord(0);
+    record = randomRecord(i);
     int new_entry=record.id;
     printf("New entry is: %d\n", new_entry);
     new_entry = BP_InsertEntry(file_desc,info,record);
