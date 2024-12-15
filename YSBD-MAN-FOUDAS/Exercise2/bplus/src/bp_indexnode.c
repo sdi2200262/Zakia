@@ -36,7 +36,7 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    for (int i = 0; i < node->keys_counter; i++) {
       
       if (node->keys[i] == key) {
-         printf("Duplicate key found!\n\n");
+         printf("Duplicate key found at index node!\n\n");
          // Duplicate key not allowed
          return -1;
       }
