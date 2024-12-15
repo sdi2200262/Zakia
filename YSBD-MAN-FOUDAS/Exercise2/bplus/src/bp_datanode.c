@@ -36,7 +36,7 @@ int insert_record_to_DataNode(BF_Block* block, Record* record){
 
     // elegxoume an xoraei to record sto block 
     // an den xoraei kanoume epistrefoume recs_size gia na klithei h split
-    if(node->recs_counter >= recs_size) return recs_size; 
+    if(node->recs_counter >= recs_size) return recs_size;
 
     // elegxoume an to id apo to record eisodou uparxei hdh sto block
     for (int i = 0; i < node->recs_counter; i++) {
@@ -93,7 +93,7 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     DataNode* new_node = (DataNode*)BF_Block_GetData(new_block);
     init_DataNode(new_block);
 
-    int midpoint = old_node->recs_counter / 2;
+    int midpoint = (old_node->recs_counter +1) / 2;
 
     //metakinise ta misa entries sto new_block
     for(int i = midpoint; i < old_node->recs_counter; i++) {
@@ -149,7 +149,7 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     switch(result){
 
         case 0: // stin periprosi pou to key bike kanonika sto parent block prepei na ftiaksoume ta pointers
-        insert_pointer_to_IndexNode(parent_block, *new_block_id , -1);
+        insert_pointer_to_IndexNode(parent_block, *new_block_id, -1);
 
         //kane set_dirty, unpin kai destroy to temp block tou parent_block
         BF_Block_SetDirty(parent_block);
@@ -166,7 +166,7 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
         BF_Block_SetDirty(parent_block);
         BF_UnpinBlock(parent_block);
         BF_Block_Destroy(&parent_block);
-        //an h inser_key_to_IndexNode epistrepsei keys_size tote xreaizomaste splitarisma tou parent IndexNode
+        //an h insert_key_to_IndexNode epistrepsei keys_size tote xreaizomaste splitarisma tou parent IndexNode
         return keys_size;
 
         default: 

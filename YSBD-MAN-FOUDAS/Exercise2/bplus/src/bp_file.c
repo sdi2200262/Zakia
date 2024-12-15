@@ -267,7 +267,6 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     
     // h get block tha deiksei to neo block pointer sto sosto data node
     BF_GetBlock(file_desc, curr_block, block);
-
     //pleon to block ine ena leaf data node
 
     //kai kane insert sto leaf node to key
@@ -283,6 +282,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
         case recs_size:
             printf("\nto data node me id %d foulare\n", curr_block);
+            int split_block_id;
             
             //to curr_block ine full ara dimiourgoume neo data_block gia na parei ta misa entries tou curr_block
             BF_Block* new_block;

@@ -64,7 +64,7 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
 }
 
 
-int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_block_id){
+int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_block_id, int split_block_id){
    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
    // elegxoume an xoraei to key sto block 
@@ -127,3 +127,4 @@ int find_leftest_Node(BF_Block* block) {
    //epistrefei ton pio aristera komvo
    return node->pointers[0];
 }
+ 
