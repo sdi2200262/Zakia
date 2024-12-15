@@ -84,17 +84,18 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_bl
    node->pointers[i] = new_block_id;
    node->pointers_counter++;
 
+
+   for(int i =0; i <node->pointers_counter; i++){
+      printf("%d ", node->pointers[i]);
+   }
+   printf("\n");
+
    //eisagoume to parent block id
    if(parent_block_id == -1 ){
       //do nothing
       return 0;
    }
    node->parent_id = parent_block_id;
-
-   for(int i =0; i <node->pointers_counter; i++){
-      printf("%d ", node->pointers[i]);
-   }
-   printf("\n");
 
 
    return 0;
