@@ -343,6 +343,7 @@ int BP_print(int file_desc, BPLUS_INFO* bplus_info) {
 
         if (curr_block == -1) {
             // Error in find_leftest_Node, terminate
+            BF_Block_SetDirty(tmpblock);
             BF_UnpinBlock(tmpblock);
             BF_Block_Destroy(&tmpblock);
             printf("Error: Failed to traverse to the leftmost node.\n");
@@ -352,6 +353,7 @@ int BP_print(int file_desc, BPLUS_INFO* bplus_info) {
         curr_level++;
         
         // Clean up the temporary block
+        BF_Block_SetDirty(tmpblock);
         BF_UnpinBlock(tmpblock);
         BF_Block_Destroy(&tmpblock);
     }
@@ -385,6 +387,7 @@ int BP_print(int file_desc, BPLUS_INFO* bplus_info) {
     printf("\n");
 
     // Clean up
+    BF_Block_SetDirty(tmpblock);
     BF_UnpinBlock(tmpblock);
     BF_Block_Destroy(&tmpblock);
 
