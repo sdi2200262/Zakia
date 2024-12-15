@@ -62,7 +62,7 @@ Record randomRecord(int i ){
     }
     else{
          // create a record
-        record.id = i;
+        record.id = rand()%100;
         int r = rand() % (sizeof(names) / sizeof(names[0]));
         memcpy(record.name, names[r], strlen(names[r]) + 1);
         //
