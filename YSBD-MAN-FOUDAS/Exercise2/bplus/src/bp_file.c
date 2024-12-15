@@ -291,23 +291,44 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
             
             int new_index_key;
             int new_block_id;
-            if (split_DataNode(file_desc, block, new_block, &new_index_key, &new_block_id, record)==0){
+            int split = split_DataNode(file_desc, block, new_block, &new_index_key, &new_block_id, record);
+            if (split == 0){
                 printf("\nto data node me id %d foulare\n", curr_block);
                 printf("\ndimiourgithike neo block me id %d\n",new_block_id);
                 printf("\no goneas tou neou block pire neo index key %d\n", new_index_key);
-                BP_InsertEntry(file_desc, bplus_info, record);
-            }
 
-            //kane set dirty OLA ta blocks
-            //kane unpin OLA ta blocks gia na graftoun ston disko
-            BF_Block_SetDirty(block);
-            BF_Block_SetDirty(new_block);
-            BF_UnpinBlock(block);
-            BF_UnpinBlock(new_block);
-            BF_Block_Destroy(&block);
-            BF_Block_Destroy(&new_block);
-            // splitarisma
+                //kane set dirty OLA ta blocks
+                //kane unpin OLA ta blocks gia na graftoun ston disko
+                BF_Block_SetDirty(block);
+                BF_Block_SetDirty(new_block);
+                BF_UnpinBlock(block);
+                BF_UnpinBlock(new_block);
+                BF_Block_Destroy(&block);
+                BF_Block_Destroy(&new_block);
+                // splitarisma
+            
+            return curr_block;
+            }
+            if ( split == 1){
+                printf("\nto data node me id %d foulare\n", curr_block);
+                printf("\ndimiourgithike neo block me id %d\n",new_block_id);
+                printf("\no goneas tou neou block pire neo index key %d\n", new_index_key);
+
+                //kane set dirty OLA ta blocks
+                //kane unpin OLA ta blocks gia na graftoun ston disko
+                BF_Block_SetDirty(block);
+                BF_Block_SetDirty(new_block);
+                BF_UnpinBlock(block);
+                BF_UnpinBlock(new_block);
+                BF_Block_Destroy(&block);
+                BF_Block_Destroy(&new_block);
+                // splitarisma
+            
             return new_block_id;
+            }
+            else{
+                printf("\n!!!!!thelei splitarisma o index parent node MALLON\n");
+            }
 
         default:
             // Handle other cases if needed

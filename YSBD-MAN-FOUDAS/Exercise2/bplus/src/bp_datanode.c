@@ -125,7 +125,15 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     //update to parent_id tou new_data_node
     new_node->parent_id = old_node->parent_id;
 
-
+    int res;
+    if(rec.id > old_node->recs[midpoint-1].id ){
+        insert_record_to_DataNode(new_block, &rec);
+        res = 1;
+    }
+    else{
+        insert_record_to_DataNode(block, &rec);
+        res = 0; 
+    }
     
     //vale to proto record.id tou new_data_node na ine neo key ston gonea index_node
     //kalese tin insert_key_to_IndexNode
@@ -147,8 +155,12 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
         BF_Block_SetDirty(parent_block);
         BF_UnpinBlock(parent_block);
         BF_Block_Destroy(&parent_block);
-        return 0;
-
+        if(res == 1) {
+            return 1;
+        }
+        else{
+            return 0;
+        }
         case keys_size:
         //kane set_dirty, unpin kai destroy to temp block tou parent_block
         BF_Block_SetDirty(parent_block);
