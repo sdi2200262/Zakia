@@ -121,7 +121,10 @@ int insert_split_pointer_to_IndexNode(BF_Block* block, int new_block_id, int spl
 
    //bazoume to newblock pointer mia thesi deksia apo to split block
    node->pointers[pos + 1] = new_block_id;
-
+   for (int i = 0; i< node->pointers_counter; i++){
+      printf("%d " , node->pointers[i]);
+   }
+   printf("\n");
    return 0; //great success!
 }
 
