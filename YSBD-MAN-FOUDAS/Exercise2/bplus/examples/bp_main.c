@@ -73,11 +73,11 @@ void insertEntries(){
   printf("\nFourth entry with id: %d , completed in block with id: %d\n", record.id , fourth_entry);
 
 
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < 16; i++)
   {
-    record = randomRecord(i);
+    record = randomRecord(0);
     int new_entry=record.id;
-    printf("fourth entry is: %d\n", new_entry);
+    printf("New entry is: %d\n", new_entry);
     new_entry = BP_InsertEntry(file_desc,info,record);
     printf("\nNew entry with id: %d , completed in block with id: %d\n", record.id , new_entry);
     
