@@ -121,6 +121,9 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     old_node_pointer--;
     old_node->next_data_node = old_node_pointer;
 
+    //kratame new_block_id gia na to epistrepsei h BP_InserEntry;
+    *new_block_id = old_node->next_data_node;
+
     //update to parent_id tou new_data_node
     new_node->parent_id = old_node->parent_id;
 
@@ -134,11 +137,33 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
 
     BF_GetBlock(file_desc, new_node->parent_id, parent_block);
     //an einai gemato KAI to parent_block epistrefoume tin keys_size gia na kalesoume tin split_IndexNode
-    if(insert_key_to_IndexNode(parent_block, *new_index_key)== keys_size) return keys_size;
+    int result = insert_key_to_IndexNode(parent_block, *new_index_key);
     
-    //kratame new_block_id gia na to epistrepsei h BP_InserEntry;
-    *new_block_id = old_node->next_data_node;
+    switch(result){
 
+        case 0: // stin periprosi pou to key bike kanonika sto parent block prepei na ftiaksoume ta pointers
+        insert_pointer_to_IndexNode(parent_block, *new_block_id , -1);
+
+        //kane set_dirty, unpin kai destroy to temp block tou parent_block
+        BF_Block_SetDirty(parent_block);
+        BF_UnpinBlock(parent_block);
+        BF_Block_Destroy(&parent_block);
+        return 0;
+
+        case keys_size:
+        //kane set_dirty, unpin kai destroy to temp block tou parent_block
+        BF_Block_SetDirty(parent_block);
+        BF_UnpinBlock(parent_block);
+        BF_Block_Destroy(&parent_block);
+        //an h inser_key_to_IndexNode epistrepsei keys_size tote xreaizomaste splitarisma tou parent IndexNode
+        return keys_size;
+
+        default: 
+        // Handle other cases if needed
+        printf("Unhandled result: %d\n", result);
+        break;
+    }
+    
     
     //kane set_dirty, unpin kai destroy to temp block tou parent_block
     BF_Block_SetDirty(parent_block);

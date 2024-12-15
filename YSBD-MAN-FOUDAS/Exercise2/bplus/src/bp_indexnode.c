@@ -85,6 +85,10 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_bl
    node->pointers_counter++;
 
    //eisagoume to parent block id
+   if(parent_block_id == -1 ){
+      //do nothing
+      return 0;
+   }
    node->parent_id = parent_block_id;
 
    return 0;
