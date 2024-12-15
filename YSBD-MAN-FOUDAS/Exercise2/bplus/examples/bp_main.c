@@ -8,7 +8,7 @@
 #include "bp_indexnode.h"
 #include "record.h"
 
-#define RECORDS_NUM 200 // you can change it if you want
+#define RECORDS_NUM 100 // you can change it if you want
 #define FILE_NAME "data.db"
 
 #define CALL_OR_DIE(call)     \
@@ -73,7 +73,7 @@ void insertEntries(){
   printf("\nFourth entry with id: %d , completed in block with id: %d\n", record.id , fourth_entry);
 
 
-  for (int i = 0; i < RECORDS_NUM; i++)
+  for (int i = 5; i < RECORDS_NUM; i++)
   {
     record = randomRecord(0);
     int result;
