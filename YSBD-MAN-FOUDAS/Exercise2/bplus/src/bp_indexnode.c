@@ -64,7 +64,7 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
 }
 
 
-int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_block_id, int split_block_id){
+int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
    // elegxoume an xoraei to key sto block 
@@ -95,17 +95,44 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_bl
    }
    printf("\n");
 
-   //eisagoume to parent block id
-   if(parent_block_id == -1 ){
-      //do nothing
-      return 0;
-   }
-   node->parent_id = parent_block_id;
-
-
    return 0;
 }
+
+int insert_split_pointer_to_IndexNode(BF_Block* block, int new_block_id, int split_block_id){
+   IndexNode* node = (IndexNode* )BF_Block_GetData(block);
    
+   int pos = 0;
+
+   //briskoume tin thesi tou block pou einai foul kai tha splittaristei
+   while (pos < node->pointers_counter && node->pointers[pos] != split_block_id) {
+      pos++;
+   }
+
+   //check oti odos to block brethike
+   if (pos == node->pointers_counter) {
+      printf("Error: Split block ID %d not found in pointers array\n", split_block_id);
+      return -1;
+   }
+
+   // shift olous tous pointers deksia apo auto to block mia thesi gia na xoresei to new block pointer
+   for (int i = node->pointers_counter; i > pos + 1; i--) {
+      node->pointers[i] = node->pointers[i - 1];
+   }
+
+   //bazoume to newblock pointer mia thesi deksia apo to split block
+   node->pointers[pos + 1] = new_block_id;
+
+   return 0; //great success!
+}
+
+
+int set_parent_id_to_IndexNode(BF_Block* block, int parent_block_id){
+   IndexNode* node = (IndexNode* )BF_Block_GetData(block);
+
+   node->parent_id = parent_block_id;
+   
+   return 0;
+}   
 
 int find_next_Node(BF_Block* block, int key) {
     IndexNode* node = (IndexNode*)BF_Block_GetData(block);

@@ -69,14 +69,21 @@ int insert_record_to_DataNode(BF_Block* block, Record* record){
 }
 
 
-int insert_pointer_to_DataNode( BF_Block* block, int new_block_id, int parent_block_id){
+int insert_pointer_to_DataNode( BF_Block* block, int new_block_id){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
 
     node->next_data_node = new_block_id;
-    node->parent_id = parent_block_id;
     
     return 0;
 }
+
+int set_parent_id_to_DataNode(BF_Block* block, int parent_block_id){
+   DataNode* node = (DataNode* )BF_Block_GetData(block);
+
+   node->parent_id = parent_block_id;
+   
+   return 0;
+}  
 
 int debug(BF_Block* block){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
@@ -87,7 +94,7 @@ int debug(BF_Block* block){
     return 0;
 }
 
-int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id, Record rec){
+int split_DataNode(int file_desc, BF_Block* block,int split_block_id, BF_Block* new_block, int* new_index_key, int* new_block_id, Record rec){
     DataNode* old_node = (DataNode*)BF_Block_GetData(block);
     
     DataNode* new_node = (DataNode*)BF_Block_GetData(new_block);
@@ -126,13 +133,13 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     new_node->parent_id = old_node->parent_id;
 
     int res;
-    if(rec.id > old_node->recs[midpoint-1].id ){
-        insert_record_to_DataNode(new_block, &rec);
-        res = 1;
+    if(rec.id < new_node->recs[0].id ){
+        insert_record_to_DataNode(block, &rec);
+        res = 0; //to new record bhke sto palio block
     }
     else{
-        insert_record_to_DataNode(block, &rec);
-        res = 0; 
+        insert_record_to_DataNode(new_block, &rec);
+        res = 1;  //to new record bhke sto neo block
     }
     
     //vale to proto record.id tou new_data_node na ine neo key ston gonea index_node
@@ -140,7 +147,6 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     *new_index_key = new_node->recs[0].id;
     BF_Block* parent_block;
     BF_Block_Init(&parent_block);
-    //BF_AllocateBlock(file_desc, parent_block);
 
     BF_GetBlock(file_desc, new_node->parent_id, parent_block);
     //an einai gemato KAI to parent_block epistrefoume tin keys_size gia na kalesoume tin split_IndexNode
@@ -149,7 +155,7 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     switch(result){
 
         case 0: // stin periprosi pou to key bike kanonika sto parent block prepei na ftiaksoume ta pointers
-        insert_pointer_to_IndexNode(parent_block, *new_block_id, -1);
+        insert_split_pointer_to_IndexNode(parent_block, *new_block_id, split_block_id);
 
         //kane set_dirty, unpin kai destroy to temp block tou parent_block
         BF_Block_SetDirty(parent_block);
@@ -162,6 +168,7 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
             return 0;
         }
         case keys_size:
+        printf("\nPeriptosi pou to Index block xreiazetai splitting!!! ( under construction)\n\n");
         //kane set_dirty, unpin kai destroy to temp block tou parent_block
         BF_Block_SetDirty(parent_block);
         BF_UnpinBlock(parent_block);

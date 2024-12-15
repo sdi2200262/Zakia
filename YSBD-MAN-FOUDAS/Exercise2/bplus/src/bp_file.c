@@ -161,7 +161,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         CALL_BF(BF_GetBlockCounter(file_desc , &left_data_block_id));
         left_data_block_id--;
         //riza den exei parent node ara to parent id tha pairnei -1
-        if(insert_pointer_to_IndexNode(root_block, left_data_block_id, -1) == 0){         
+        if(insert_pointer_to_IndexNode(root_block, left_data_block_id) == 0){         
             printf("Index Root Node me block ID %d pire pointer me id %d\n", root_block_id, left_data_block_id);
         }
 
@@ -175,7 +175,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         CALL_BF(BF_GetBlockCounter(file_desc , &right_data_block_id));
         right_data_block_id--;
         //riza den exei parent node ara to parent id tha pairnei -1
-        if(insert_pointer_to_IndexNode(root_block, right_data_block_id, -1) == 0){
+        if(insert_pointer_to_IndexNode(root_block, right_data_block_id) == 0){
             printf("Index Root Node me block ID %d pire pointer me id %d\n", root_block_id, right_data_block_id);
         }
         
@@ -186,7 +186,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         // to left_data_node tha ine adeio alla o deiktis tou prepei na deixnei sto right_data_node
         if(init_DataNode(left_data_block)==0){
             //to parent node ine to root kai to node apo ta deksia einai to right_data_block
-            insert_pointer_to_DataNode(left_data_block,right_data_block_id, root_block_id);           
+            insert_pointer_to_DataNode(left_data_block,right_data_block_id);
+            set_parent_id_to_DataNode(left_data_block, root_block_id);           
             printf("\nData Node me block ID %d init.\n", left_data_block_id);
             printf("Data Node me block ID %d pire pointer %d\n", left_data_block_id, right_data_block_id);
         }   
@@ -194,8 +195,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         // to right_data_node tha periexei to record pou exei record.id to idio me to key tou root
         if(init_DataNode(right_data_block)==0){
             insert_record_to_DataNode(right_data_block, &record);
-            //to parent node ine to root alla den exoume node apo ta deksia ara pairnei -1
-            insert_pointer_to_DataNode(right_data_block, -1, root_block_id);
+            //to parent node ine to root 
+            set_parent_id_to_DataNode(right_data_block, root_block_id);
             printf("\nData Node me block ID %d init.\n", right_data_block_id);
             printf("Data Node me block ID %d pire record %d\n", right_data_block_id, record.id);
         }    
@@ -263,7 +264,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     // eftase telika h prospelasi 
     BF_Block* block;
     BF_Block_Init(&block);
-    //CALL_BF(BF_AllocateBlock(file_desc, block));
+    
     
     // h get block tha deiksei to neo block pointer sto sosto data node
     BF_GetBlock(file_desc, curr_block, block);
@@ -277,13 +278,10 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     switch (result) {
         case 0:
             printf("Data Node me block ID %d pire key me value %d \n", curr_block, record.id);
-            
             break;
 
         case recs_size:
-            printf("\nto data node me id %d foulare\n", curr_block);
-            int split_block_id;
-            
+            printf("SPLIT\n");
             //to curr_block ine full ara dimiourgoume neo data_block gia na parei ta misa entries tou curr_block
             BF_Block* new_block;
             BF_Block_Init(&new_block);
@@ -291,7 +289,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
             
             int new_index_key;
             int new_block_id;
-            int split = split_DataNode(file_desc, block, new_block, &new_index_key, &new_block_id, record);
+            int split = split_DataNode(file_desc, block, curr_block, new_block, &new_index_key, &new_block_id, record);
             if (split == 0){
                 printf("\nto data node me id %d foulare\n", curr_block);
                 printf("\ndimiourgithike neo block me id %d\n",new_block_id);
