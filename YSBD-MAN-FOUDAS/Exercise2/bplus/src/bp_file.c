@@ -273,10 +273,14 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     switch (result) {
         case 0:
             printf("Data Node me block ID %d pire key me value %d \n", curr_block, record.id);
+            
             break;
 
         case recs_size:
             printf("\nto data node me id %d foulare\n", curr_block);
+            BF_UnpinBlock(block);
+            BF_Block_SetDirty(block);
+            BF_Block_Destroy(&block);
             // splitarisma
             return 0;
 

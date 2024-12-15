@@ -42,41 +42,48 @@ void insertEntries(){
   int file_desc;
   BPLUS_INFO* info = BP_OpenFile(FILE_NAME, &file_desc);
   Record record;
+  
 
-  /*
-  for (int i = 0; i < RECORDS_NUM; i++)
-  {
-    record = randomRecord();
-    BP_InsertEntry(file_desc,info, record);
-  }
-  */
-
-  //bazume riza
+  //bazume riza einai 383 tha bei deksia
   record = randomRecord(0);
   int first_entry=record.id;
   printf("First entry is: %d\n", first_entry);
   first_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nFirst entry with id: %d, completed in block  with id :%d\n", record.id, first_entry);
 
-  //bazoume deftero record
+  //bazoume deftero record ( einai 783 tha bei deksia meta to proto)
   record = randomRecord(0);
   int second_entry=record.id;
   printf("Second entry is: %d\n", second_entry);
   second_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nSecond entry with id: %d , completed in block with id: %d\n", record.id , second_entry);
 
+  //bazoume trito gia na bei aristera
   record = randomRecord(100);
   int third_entry=record.id;
   printf("Third entry is: %d\n", third_entry);
   third_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nThird entry with id: %d , completed in block with id: %d\n", record.id , third_entry);
 
+  //bazoume tetarto gia na bei aristera meta to trito
   record = randomRecord(150);
   int fourth_entry=record.id;
   printf("fourth entry is: %d\n", fourth_entry);
   fourth_entry = BP_InsertEntry(file_desc,info,record);
   printf("\nFourth entry with id: %d , completed in block with id: %d\n", record.id , fourth_entry);
 
+
+  for (int i = 0; i < RECORDS_NUM; i++)
+  {
+    record = randomRecord(0);
+    int result;
+    result = BP_InsertEntry(file_desc,info, record);
+    if( result == recs_size){
+      printf("ena node foulare!\n\n");
+      break; 
+    }
+  }
+  
 
   BP_CloseFile(file_desc,info);
   BF_Close();
