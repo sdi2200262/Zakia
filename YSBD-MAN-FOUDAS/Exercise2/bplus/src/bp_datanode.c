@@ -137,7 +137,7 @@ int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new
     *new_index_key = new_node->recs[0].id;
     BF_Block* parent_block;
     BF_Block_Init(&parent_block);
-    BF_AllocateBlock(file_desc, parent_block);
+    //BF_AllocateBlock(file_desc, parent_block);
 
     BF_GetBlock(file_desc, new_node->parent_id, parent_block);
     //an einai gemato KAI to parent_block epistrefoume tin keys_size gia na kalesoume tin split_IndexNode

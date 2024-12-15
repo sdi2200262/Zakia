@@ -243,7 +243,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
         //dimiourgoume ena temp block gia tin prospelasi tou dedrou
         BF_Block* tmpblock;
         BF_Block_Init(&tmpblock);
-        CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
+        //CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
 
         //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
         CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
@@ -263,7 +263,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
     // eftase telika h prospelasi 
     BF_Block* block;
     BF_Block_Init(&block);
-    CALL_BF(BF_AllocateBlock(file_desc, block));
+    //CALL_BF(BF_AllocateBlock(file_desc, block));
     
     // h get block tha deiksei to neo block pointer sto sosto data node
     BF_GetBlock(file_desc, curr_block, block);
