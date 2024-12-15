@@ -75,3 +75,13 @@ int insert_pointer_to_DataNode( BF_Block* block, int new_block_id){
     
     return 0;
 }
+
+int debug(BF_Block* block){
+    DataNode* node = (DataNode*)BF_Block_GetData(block);
+
+    for(int i =0; i < node->recs_counter; i++){
+        printf("%d ",node->recs[i].id);
+    }
+    
+    return 0;
+}

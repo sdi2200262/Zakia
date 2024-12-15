@@ -25,6 +25,7 @@ typedef struct DataNode{
 int init_DataNode(BF_Block* block);
 int insert_record_to_DataNode( BF_Block* block , Record* record);
 int insert_pointer_to_DataNode( BF_Block* block, int new_block_id);
+int debug(BF_Block* block);
 //int split_data(BF_Block *block, BF_Block *newblock, Record *rec);
 //int search_record(BF_Block *block, int id, Record **result);
 

@@ -293,6 +293,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     bplus_info->total_record_counter++;
 
+    debug(block);
+    
     BF_UnpinBlock(block);
     BF_Block_SetDirty(block);
     BF_Block_Destroy(&block);
