@@ -6,17 +6,17 @@
 #include "bp_file.h"
 #include "bp_indexnode.h"
 
-#define recs_size ( 504 / sizeof(Record))
+#define recs_size ( 500 / sizeof(Record))
 
 
 
 // ena DataNode ine ena BF_Block ara periexei 512bytes
 // o pinakas pou periexei tis eggrafes tha ine:
 //      {512 - ( 2 * sizeof(int) ) } / sizeof(Record)
-typedef struct DataNode{ 
-
+typedef struct DataNode{
+    int parent_id;
     int next_data_node;     // apothikevoume to block number tou epomenou datanode apo ta deksia - 4 bytes
-    int recs_counter;       // apothikeoume to sunolo ton eggrafon pou einai mesa ston pinaka - 4 bytes
+    int recs_counter;   // apothikeoume to sunolo ton eggrafon pou einai mesa ston pinaka - 4 bytes
     Record recs[recs_size];      //pinakas pou periexei eggrafes
 
 } DataNode;
@@ -24,9 +24,9 @@ typedef struct DataNode{
 
 int init_DataNode(BF_Block* block);
 int insert_record_to_DataNode( BF_Block* block , Record* record);
-int insert_pointer_to_DataNode( BF_Block* block, int new_block_id);
+int insert_pointer_to_DataNode( BF_Block* block, int new_block_id , int parent_block_id);
 int debug(BF_Block* block);
-//int split_data(BF_Block *block, BF_Block *newblock, Record *rec);
+int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id);
 //int search_record(BF_Block *block, int id, Record **result);
 
 

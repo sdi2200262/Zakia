@@ -31,7 +31,7 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
 
    // elegxoume an xoraei to key sto block 
    // an den xoraei kanoume epistrefoume keys_size gia na klithei h split
-   if(node->keys_counter >= keys_size) return keys_size; 
+   if(node->keys_counter >= keys_size) return keys_size;
    // elegxoume an to key uparxei hdh sto block
    for (int i = 0; i < node->keys_counter; i++) {
       
@@ -59,7 +59,7 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
 }
 
 
-int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
+int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_block_id){
    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
    // elegxoume an xoraei to key sto block 
@@ -83,6 +83,9 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
    // eisagoume to neo record
    node->pointers[i] = new_block_id;
    node->pointers_counter++;
+
+   //eisagoume to parent block id
+   node->parent_id = parent_block_id;
 
    return 0;
 }

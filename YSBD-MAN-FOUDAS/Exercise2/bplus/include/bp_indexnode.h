@@ -19,7 +19,7 @@
 #define pointers_size (((512 / sizeof(int)) / 2) - 1)
 
 typedef struct IndexNode{
-
+    int parent_id;
     int keys_counter;
     int pointers_counter;
     int keys[keys_size];
@@ -30,7 +30,7 @@ typedef struct IndexNode{
 
 int init_IndexNode(BF_Block* block);
 int insert_key_to_IndexNode(BF_Block* block, int key);
-int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id);
+int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id, int parent_block_id);
 int find_next_Node(BF_Block* block, int key);
 
 #endif

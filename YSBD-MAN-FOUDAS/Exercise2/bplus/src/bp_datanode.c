@@ -18,6 +18,7 @@
 int init_DataNode( BF_Block* block){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
     
+    node->parent_id = -1;
     node->next_data_node = -1;
     node->recs_counter = 0;
     for (int i=0; i< recs_size; i++) {
@@ -68,10 +69,11 @@ int insert_record_to_DataNode(BF_Block* block, Record* record){
 }
 
 
-int insert_pointer_to_DataNode( BF_Block* block, int new_block_id){
+int insert_pointer_to_DataNode( BF_Block* block, int new_block_id, int parent_block_id){
     DataNode* node = (DataNode*)BF_Block_GetData(block);
 
     node->next_data_node = new_block_id;
+    node->parent_id = parent_block_id;
     
     return 0;
 }
@@ -83,5 +85,64 @@ int debug(BF_Block* block){
         printf("%d ",node->recs[i].id);
     }
     
+    return 0;
+}
+
+int split_DataNode(int file_desc, BF_Block* block, BF_Block* new_block, int* new_index_key, int* new_block_id){
+    // Access the old data node
+    DataNode* old_node = (DataNode*)BF_Block_GetData(block);
+    
+    DataNode* new_node = (DataNode*)BF_Block_GetData(new_block);
+    init_DataNode(new_block);
+
+    int midpoint = old_node->recs_counter / 2;
+
+    //metakinise ta misa entries sto new_block
+    for(int i = midpoint; i < old_node->recs_counter; i++) {
+        new_node->recs[i - midpoint] = old_node->recs[i];
+        new_node->recs_counter++;
+    }
+
+    //arxikopoiise ta entries tou old_node pou metaferthikan sto new_node
+    for (int i=midpoint; i< old_node->recs_counter; i++) {
+        old_node->recs[i].id = -1;
+        strncpy(old_node->recs[i].name, "", sizeof(old_node->recs[i].name));
+        strncpy(old_node->recs[i].surname, "", sizeof(old_node->recs[i].surname));
+        strncpy(old_node->recs[i].city, "", sizeof(old_node->recs[i].city));
+    }
+
+    //update to recs_counter tou old node sta misa
+    old_node->recs_counter = midpoint;
+
+    // update to next_data_node pointer twn duo nodes
+    new_node->next_data_node = old_node->next_data_node;
+    int old_node_pointer;
+    old_node_pointer = BF_GetBlockCounter(file_desc, &old_node_pointer) - 1;
+    old_node->next_data_node = old_node_pointer;
+
+    //update to parent_id tou new_data_node
+    new_node->parent_id = old_node->parent_id;
+
+    //vale to proto record.id tou new_data_node na ine neo key ston gonea index_node
+    //kalese tin insert_key_to_IndexNode
+    
+    *new_index_key = new_node->recs[0].id;
+    BF_Block* parent_block;
+    BF_Block_Init(&parent_block);
+    BF_AllocateBlock(file_desc, parent_block);
+
+    BF_GetBlock(file_desc, new_node->parent_id, parent_block);
+    //an einai gemato KAI to parent_block epistrefoume tin keys_size gia na kalesoume tin split_IndexNode
+    if(insert_key_to_IndexNode(parent_block, *new_index_key)== keys_size) return keys_size;
+    
+    //kratame new_block_id gia na to epistrepsei h BP_InserEntry;
+    *new_block_id = old_node->next_data_node;
+
+    
+    //kane set_dirty, unpin kai destroy to temp block tou parent_block
+    BF_Block_SetDirty(parent_block);
+    BF_UnpinBlock(parent_block);
+    BF_Block_Destroy(&parent_block);
+
     return 0;
 }
