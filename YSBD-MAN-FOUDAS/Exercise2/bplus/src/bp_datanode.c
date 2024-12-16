@@ -171,7 +171,7 @@ int split_DataNode(int file_desc, BF_Block* block,int split_block_id, BF_Block* 
         BF_UnpinBlock(parent_block);
         BF_Block_Destroy(&parent_block);
         //an h insert_key_to_IndexNode epistrepsei keys_size tote xreaizomaste splitarisma tou parent IndexNode
-        return keys_size;
+        return old_node->parent_id;
 
         default: 
         //printf("Mh diaxeirimo apotelesma: %d\n", result);

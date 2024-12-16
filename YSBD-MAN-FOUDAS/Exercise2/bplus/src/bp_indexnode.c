@@ -144,86 +144,114 @@ int find_leftest_Node(BF_Block* block) {
 
 int split_indexNode(int file_desc,BPLUS_INFO* bplus_info, BF_Block* block, int split_block_id, BF_Block* new_block, int* new_index_key, int* new_block_id, int key) 
 {
-    IndexNode* old_node = (IndexNode*)BF_Block_GetData(block);
-    IndexNode* new_node = (IndexNode*)BF_Block_GetData(new_block);
-    int midpoint = (old_node->keys_counter + 1) / 2;
+   IndexNode* old_node = (IndexNode*)BF_Block_GetData(block);
+   IndexNode* new_node = (IndexNode*)BF_Block_GetData(new_block);
+   init_IndexNode(new_block);
 
-    // Move half the keys and pointers to the new node
-    for (int i = midpoint; i < old_node->keys_counter; i++) {
-        new_node->keys[i - midpoint] = old_node->keys[i];
-        new_node->pointers[i - midpoint] = old_node->pointers[i];
-    }
-    new_node->pointers[old_node->keys_counter - midpoint] = old_node->pointers[old_node->keys_counter];
+   int midpoint = (old_node->keys_counter + 1) / 2;
 
-    // Update counters for both nodes
-    new_node->keys_counter = old_node->keys_counter - midpoint;
-    old_node->keys_counter = midpoint - 1;
+   // metakinise ta misa keys sto neo block
+   for (int i = midpoint; i < old_node->keys_counter; i++) {
+      new_node->keys[i - midpoint] = old_node->keys[i];
+      new_node->keys_counter++;
+      new_node->pointers[i - midpoint] = old_node->pointers[i];
+      new_node->pointers_counter++;
+   }
+   //new_node->pointers[old_node->keys_counter - midpoint] = old_node->pointers[old_node->keys_counter];
+   // arxikopoihsh twn keys - pointers tou old node pou metaferthikan sto new node
+   for(int i = midpoint; i < old_node->keys_counter; i++) {
+   old_node->keys[i] = -1;
+   }
 
-    // Set parent ID for new node
-    new_node->parent_id = old_node->parent_id;
+   for(int i = midpoint; i < old_node->pointers_counter; i++){
+   old_node->pointers[i] = -1;
+   }
 
-    // New index key is the middle key
-    *new_index_key = old_node->keys[midpoint - 1];
+   old_node->keys_counter = midpoint - 1;
+   old_node->pointers_counter = midpoint;
 
-    // Update new block ID
-    int new_block_id_temp;
-    BF_GetBlockCounter(file_desc, &new_block_id_temp);
-    new_block_id_temp--;
-    *new_block_id = new_block_id_temp;
+   // update to neo block id
+   int id;
+   BF_GetBlockCounter(file_desc, &id);
+   id--;
+   *new_block_id = id;
 
-    // Special case: Splitting the root
-    if (old_node->parent_id == -1) {
-        // Create a new root
-        BF_Block* new_root_block;
-        BF_Block_Init(&new_root_block);
-        BF_AllocateBlock(file_desc, new_root_block);
-        IndexNode* new_root = (IndexNode*)BF_Block_GetData(new_root_block);
-        init_IndexNode(new_root_block);
+   // update to parent id tou neou imdex node
+   new_node->parent_id = old_node->parent_id;
 
-        new_root->keys[0] = *new_index_key;
-        new_root->pointers[0] = split_block_id;
-        new_root->pointers[1] = new_block_id_temp;
-        new_root->keys_counter = 1;
+   int res;
+   // an to key ine mikrotero apo to prwto key tou neou node balto sto palio node
+   if(key < new_node->keys[0]){
+      insert_key_to_IndexNode(block, key);
+      res =0;
+   }else{
+      insert_key_to_IndexNode(new_block, key);
+      res = 1;
+   }
 
-        // Update the parent ID of the split nodes
-        old_node->parent_id = new_block_id_temp;
-        new_node->parent_id = new_block_id_temp;
+   // to neo index key ine to prwtp key tou neo block
+   *new_index_key = new_node->keys[0];
 
-        // Update the root block
-        BF_Block_SetDirty(new_root_block);
-        BF_UnpinBlock(new_root_block);
-        BF_Block_Destroy(&new_root_block);
-        
-        return 1;  // New root was created
-    }
+   // special case na thelei splittarisma to root
+   if (old_node->parent_id == -1) {
+      BF_Block* new_root;
+      BF_Block_Init(&new_root);
+      BF_AllocateBlock(file_desc, new_root);
 
-    // Insert the new index key into the parent node
-    BF_Block* parent_block;
-    BF_Block_Init(&parent_block);
-    BF_GetBlock(file_desc, old_node->parent_id, parent_block);
+      IndexNode* node = (IndexNode*)BF_Block_GetData(new_root);
+      init_IndexNode(new_root);
 
-    int result = insert_key_to_IndexNode(parent_block, *new_index_key);
-    switch (result) {
-        case 0:  // Key was inserted successfully
-            insert_split_pointer_to_IndexNode(parent_block, *new_block_id, split_block_id);
-            BF_Block_SetDirty(parent_block);
-            BF_UnpinBlock(parent_block);
-            BF_Block_Destroy(&parent_block);
-            return 0;
+      node->keys[0] = *new_index_key;
+      node->pointers[0] = split_block_id;
+      node->pointers[1] = *new_block_id;
+      node->keys_counter = 1;
 
-        case keys_size:  // Parent block needs splitting
-            BF_Block_SetDirty(parent_block);
-            BF_UnpinBlock(parent_block);
-            BF_Block_Destroy(&parent_block);
-            return keys_size;
+      // update ta parent ids ton apo katw komvwn
+      int parent_id;
+      BF_GetBlockCounter(file_desc, &parent_id);
+      parent_id--;
 
-        default:
-            // Unexpected result
-            BF_Block_SetDirty(parent_block);
-            BF_UnpinBlock(parent_block);
-            BF_Block_Destroy(&parent_block);
-            return -1;
-    }
+      bplus_info->root_block_id = parent_id;
+      bplus_info->tree_height++;
+
+      old_node->parent_id = parent_id;
+      new_node->parent_id = parent_id;
+
+      BF_Block_SetDirty(new_root);
+      BF_UnpinBlock(new_root);
+      BF_Block_Destroy(&new_root);
+      
+      return 1;
+   }
+
+   // kane insert to index key ston komvo gonea
+   BF_Block* parent_block;
+   BF_Block_Init(&parent_block);
+   BF_GetBlock(file_desc, old_node->parent_id, parent_block);
+
+   int result = insert_key_to_IndexNode(parent_block, *new_index_key);
+
+   switch (result) {
+      case 0:
+         insert_split_pointer_to_IndexNode(parent_block, *new_block_id, split_block_id);
+         BF_Block_SetDirty(parent_block);
+         BF_UnpinBlock(parent_block);
+         BF_Block_Destroy(&parent_block);
+         return 0;
+
+      case keys_size:
+         printf("Periptosh pou to parent index node thelei split\n\n");
+         BF_Block_SetDirty(parent_block);
+         BF_UnpinBlock(parent_block);
+         BF_Block_Destroy(&parent_block);
+         return keys_size;
+
+      default:
+         break;
+   }
+   BF_Block_SetDirty(parent_block);
+   BF_UnpinBlock(parent_block);
+   BF_Block_Destroy(&parent_block);
 }
 
  
