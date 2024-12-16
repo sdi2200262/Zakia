@@ -52,7 +52,6 @@ int BP_CreateFile(char *fileName) {
     bplus_info->tree_height = -1;         // to dedro ine adeio - den uparxei riza
     bplus_info->file_desc = file_desc;  
     bplus_info->total_record_counter = 0;
-    bplus_info->root_block_id = -1;
 
     printf("Metadata block created\n");
     printf("tree_hight              initialized: %d\n", bplus_info->tree_height);
@@ -83,9 +82,8 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     BF_Block_Init(&block);
     BF_GetBlock(*file_desc,0,block);
     
-    BPLUS_INFO* bplus_info = malloc(sizeof(BPLUS_INFO));
-    char* data = BF_Block_GetData(block);
-    memcpy(bplus_info, data, sizeof(BPLUS_INFO));
+    void* data = BF_Block_GetData(block);
+    BPLUS_INFO* bplus_info = (BPLUS_INFO*) data;
     
 
     BF_UnpinBlock(block);
@@ -104,7 +102,7 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     BF_Block_SetDirty(block);
     BF_UnpinBlock(block);
     BF_Block_Destroy(&block);
-    free(info);
+    
      
     CALL_BF(BF_CloseFile(file_desc));
     printf("\nClosed File with file_desc: %d (BP_CloseFile works)\n", file_desc);
@@ -325,7 +323,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     bplus_info->total_record_counter++;
     
-    debug(block);
+    debug_Data(block);
 
     BF_UnpinBlock(block);
     BF_Block_SetDirty(block);
@@ -335,31 +333,45 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 }
 
 int BP_GetEntry(int file_desc, BPLUS_INFO* bplus_info, int id, Record** result) {
-    //  De doulevei
+    
+    int curr_block = bplus_info->root_block_id;
+    int curr_level=0;
+
+    //perase apo olous tous index nodes sto sosto path
+    while(curr_level < bplus_info->tree_height -1){
+        
+        //dimiourgoume ena temp block gia tin prospelasi tou dedrou
+        BF_Block* tmpblock;
+        BF_Block_Init(&tmpblock);
+        //CALL_BF(BF_AllocateBlock(file_desc, tmpblock));
+
+        //kaloume tin GetBlock gia na epistrepsei sto block to BF_Block me block_num = curr_block
+        CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
+
+        //kaloume tin find_next_Node gia na epistrepsei to block_num tou epomenou block gia tin prospelasi
+        curr_block = find_next_Node(tmpblock,id);
+
+
+        curr_level++;
+
+        //diagrafoume to tmp block se kathe iteration
+        BF_Block_SetDirty(tmpblock);
+        BF_UnpinBlock(tmpblock);
+        BF_Block_Destroy(&tmpblock);
+    }
+
+    // dimiourgoume neo block pointer gia na deixnei sto data node sto opoio
+    // eftase telika h prospelasi 
     BF_Block* block;
     BF_Block_Init(&block);
-
-    int curr_block = 0;
-    BF_GetBlock(file_desc, curr_block , block);
-    int curr_level = 0;
-
-    while (curr_level < bplus_info->tree_height - 1) {
-        
-        IndexNode* node = (IndexNode*)BF_Block_GetData(block);
-        int next;
-        for (int i = 0; i < node->pointers_counter; i++) {
-            if (id < node->keys[i]) {
-                next = node->pointers[i];
-                break;
-            }
-        }
-        next =  node->pointers[node->pointers_counter - 1];
-        BF_GetBlock(file_desc, next , block);
     
-        printf("%d \n", next);
-        curr_level++;
-    }
-    debug(block);
+    printf("Block: %d\n",curr_block);
+    
+    // h get block tha deiksei to neo block pointer sto sosto data node
+    BF_GetBlock(file_desc, curr_block, block);
+    //pleon to block ine ena leaf data node
+
+    //debug_Index(block);
     search_record(block , id , result);
 
     BF_Block_SetDirty(block);

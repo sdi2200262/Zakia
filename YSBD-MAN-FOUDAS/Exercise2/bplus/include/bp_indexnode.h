@@ -35,5 +35,7 @@ int set_parent_id_to_IndexNode(BF_Block* block, int parent_block_id);
 int insert_split_pointer_to_IndexNode(BF_Block* block, int new_block_id, int split_block_id);
 int find_next_Node(BF_Block* block, int key);
 int find_leftest_Node(BF_Block* block);
+int split_indexNode(int file_desc, BPLUS_INFO* bplus_info, BF_Block* block, int split_block_id, BF_Block* new_block, int* new_index_key, int* new_block_id, int key);
+int debug_Index(BF_Block* block);
 
 #endif

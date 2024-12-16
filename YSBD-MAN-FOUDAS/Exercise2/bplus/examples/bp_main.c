@@ -40,6 +40,8 @@ void insertEntries(){
   BF_Init(LRU);
   BP_CreateFile(FILE_NAME);
   int file_desc;
+  printf("\n--------------------------------------------------------------------------------------\n");
+  printf("\n\nThis is insertEntries\n");
   BPLUS_INFO* info = BP_OpenFile(FILE_NAME, &file_desc);
   Record record;
   
@@ -54,6 +56,8 @@ void insertEntries(){
   }
   
   printf("\n--------------------------------------------------------------------------------------\n");
+  printf("\n--------------------------------------------------------------------------------------\n");
+  printf("BP_PRINT:\n\n");
   BP_print(file_desc, info);
 
   BP_CloseFile(file_desc,info);
@@ -66,8 +70,10 @@ void findEntries(){
   BPLUS_INFO* info;
 
   BF_Init(LRU);
+  printf("\n\n\n--------------------------------------------------------------------------------------\n");
+  printf("\n\nThis is findEntries..\n");
   info=BP_OpenFile(FILE_NAME, &file_desc);
-  printf("File desc = %d\n\n", file_desc);
+ 
 
   Record tmpRec;  //Αντί για malloc
   Record* result=&tmpRec;

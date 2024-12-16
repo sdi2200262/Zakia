@@ -140,4 +140,104 @@ int find_leftest_Node(BF_Block* block) {
    //epistrefei ton pio aristera komvo
    return node->pointers[0];
 }
+
+
+int split_indexNode(int file_desc,BPLUS_INFO* bplus_info, BF_Block* block, int split_block_id, BF_Block* new_block, int* new_index_key, int* new_block_id, int key) 
+{
+    IndexNode* old_node = (IndexNode*)BF_Block_GetData(block);
+    IndexNode* new_node = (IndexNode*)BF_Block_GetData(new_block);
+    int midpoint = (old_node->keys_counter + 1) / 2;
+
+    // Move half the keys and pointers to the new node
+    for (int i = midpoint; i < old_node->keys_counter; i++) {
+        new_node->keys[i - midpoint] = old_node->keys[i];
+        new_node->pointers[i - midpoint] = old_node->pointers[i];
+    }
+    new_node->pointers[old_node->keys_counter - midpoint] = old_node->pointers[old_node->keys_counter];
+
+    // Update counters for both nodes
+    new_node->keys_counter = old_node->keys_counter - midpoint;
+    old_node->keys_counter = midpoint - 1;
+
+    // Set parent ID for new node
+    new_node->parent_id = old_node->parent_id;
+
+    // New index key is the middle key
+    *new_index_key = old_node->keys[midpoint - 1];
+
+    // Update new block ID
+    int new_block_id_temp;
+    BF_GetBlockCounter(file_desc, &new_block_id_temp);
+    new_block_id_temp--;
+    *new_block_id = new_block_id_temp;
+
+    // Special case: Splitting the root
+    if (old_node->parent_id == -1) {
+        // Create a new root
+        BF_Block* new_root_block;
+        BF_Block_Init(&new_root_block);
+        BF_AllocateBlock(file_desc, new_root_block);
+        IndexNode* new_root = (IndexNode*)BF_Block_GetData(new_root_block);
+        init_IndexNode(new_root_block);
+
+        new_root->keys[0] = *new_index_key;
+        new_root->pointers[0] = split_block_id;
+        new_root->pointers[1] = new_block_id_temp;
+        new_root->keys_counter = 1;
+
+        // Update the parent ID of the split nodes
+        old_node->parent_id = new_block_id_temp;
+        new_node->parent_id = new_block_id_temp;
+
+        // Update the root block
+        BF_Block_SetDirty(new_root_block);
+        BF_UnpinBlock(new_root_block);
+        BF_Block_Destroy(&new_root_block);
+        
+        return 1;  // New root was created
+    }
+
+    // Insert the new index key into the parent node
+    BF_Block* parent_block;
+    BF_Block_Init(&parent_block);
+    BF_GetBlock(file_desc, old_node->parent_id, parent_block);
+
+    int result = insert_key_to_IndexNode(parent_block, *new_index_key);
+    switch (result) {
+        case 0:  // Key was inserted successfully
+            insert_split_pointer_to_IndexNode(parent_block, *new_block_id, split_block_id);
+            BF_Block_SetDirty(parent_block);
+            BF_UnpinBlock(parent_block);
+            BF_Block_Destroy(&parent_block);
+            return 0;
+
+        case keys_size:  // Parent block needs splitting
+            BF_Block_SetDirty(parent_block);
+            BF_UnpinBlock(parent_block);
+            BF_Block_Destroy(&parent_block);
+            return keys_size;
+
+        default:
+            // Unexpected result
+            BF_Block_SetDirty(parent_block);
+            BF_UnpinBlock(parent_block);
+            BF_Block_Destroy(&parent_block);
+            return -1;
+    }
+}
+
  
+int debug_Index(BF_Block* block){
+    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+    printf("%d\n", node->keys_counter);
+    for(int i =0; i < node->keys_counter; i++){
+        printf("%d ",node->keys[i]);
+    }
+    printf("\n");
+    printf("%d\n", node->pointers_counter);
+    for (int i =0; node->pointers_counter; i++){
+       printf("%d ",node->pointers[i]);
+    }
+    printf("\n");
+    return 0;
+}
