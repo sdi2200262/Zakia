@@ -51,9 +51,9 @@ int BP_InsertEntry(int file_desc,BPLUS_INFO* bplus_info, Record record);
  * θέτει το `result` να δείχνει στην εγγραφή αυτή και επιστρέφει `0` για 
  * να υποδείξει επιτυχία. Αν δεν υπάρχει τέτοια εγγραφή, η συνάρτηση θέτει 
  * το `result` σε `nullptr` και επιστρέφει `-1` για να υποδείξει αποτυχία.**/
-int BP_GetEntry(int file_desc, BPLUS_INFO* header_info, int id, Record** result);
+int BP_GetEntry(int file_desc, BPLUS_INFO* bplus_info, int id, Record** result);
 
-
+/** Σωστο πρινταρισμα των δεδομενων καθε μπλοκ **/
 int BP_print(int file_desc,BPLUS_INFO* bplus_info);
 
 #endif 

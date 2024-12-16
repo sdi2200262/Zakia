@@ -43,10 +43,7 @@ int insert_record_to_DataNode(BF_Block* block, Record* record){
         
 
         if (node->recs[i].id == record->id) {
-            // debug
-            printf("recs[%d].id = %d ",i,node->recs[i].id);
             printf("\nDuplicate found!\n\n");
-            // Duplicate key not allowed
             return -1;
         }
     }
@@ -177,8 +174,7 @@ int split_DataNode(int file_desc, BF_Block* block,int split_block_id, BF_Block* 
         return keys_size;
 
         default: 
-        // Handle other cases if needed
-        printf("Unhandled result: %d\n", result);
+        //printf("Mh diaxeirimo apotelesma: %d\n", result);
         break;
     }
     
@@ -189,4 +185,19 @@ int split_DataNode(int file_desc, BF_Block* block,int split_block_id, BF_Block* 
     BF_Block_Destroy(&parent_block);
 
     return 0;
+}
+
+
+int search_record(BF_Block *block, int id, Record **result) 
+{
+    DataNode* node = (DataNode*)BF_Block_GetData(block);
+    for (int i = 0; i<node->recs_counter; i++){
+        if(node->recs[i].id == 159){
+            **result = node->recs[i];
+            return 0;
+        }
+    }
+    *result = NULL;
+    printf("\nRecord with id : %d not found\n\n" , id);
+    return -1;
 }

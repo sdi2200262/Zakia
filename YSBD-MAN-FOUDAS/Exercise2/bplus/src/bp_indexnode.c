@@ -36,8 +36,8 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    for (int i = 0; i < node->keys_counter; i++) {
       
       if (node->keys[i] == key) {
-         printf("Duplicate key found at index node!\n\n");
-         // Duplicate key not allowed
+         printf("Duplicate key found\n\n");
+         // Duplicate key aporriptetai
          return -1;
       }
    }
@@ -55,10 +55,6 @@ int insert_key_to_IndexNode(BF_Block* block, int key){
    node->keys[i] = key;
    node->keys_counter++;
 
-   for(int i =0; i <node->keys_counter; i++){
-      printf("%d ", node->keys[i]);
-   }
-   printf("\n");
 
    return 0;
 }
@@ -89,44 +85,31 @@ int insert_pointer_to_IndexNode(BF_Block* block, int new_block_id){
    node->pointers[i] = new_block_id;
    node->pointers_counter++;
 
-
-   for(int i =0; i <node->pointers_counter; i++){
-      printf("%d ", node->pointers[i]);
-   }
-   printf("\n");
-
    return 0;
 }
 
-#include <stdio.h>
-
 int insert_split_pointer_to_IndexNode(BF_Block* block, int new_block_id, int split_block_id) {
-    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
-    
-    int pos = 0;
+   IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+   
+   int pos = 0;  //thesi tou split block 
 
-    while (pos < node->pointers_counter && node->pointers[pos] != split_block_id) {
-        pos++;
-    }
+   //psaxnoume ti the si tou split_block_id sto pointers[]
+   while (pos < node->pointers_counter && node->pointers[pos] != split_block_id) {
+      pos++;
+   }
+   
+   //if (node->pointers_counter >= pointers_size) {return -1;}
+   
+   //kanoume shift mia thesi deksia ola ta pointers meta to split_block_id
+   for (int i = node->pointers_counter; i > pos + 1; i--) {
+      node->pointers[i] = node->pointers[i - 1];
+   }
+   //kai bazoume to new_block_id amesos deksia tou
+   node->pointers[pos + 1] = new_block_id;
+   node->pointers_counter++;
 
-    if (pos == node->pointers_counter) {
-        printf("Error: Split block ID %d not found in pointers array\n", split_block_id);
-        return -1;
-    }
-
-    if (node->pointers_counter >= pointers_size) {
-        printf("Error: Cannot insert new block. Pointers array is full.\n");
-        return -1;
-    }
-
-    for (int i = node->pointers_counter; i > pos + 1; i--) {
-        node->pointers[i] = node->pointers[i - 1];
-    }
-
-    node->pointers[pos + 1] = new_block_id;
-    node->pointers_counter++;
-
-    return 0; // Success
+   
+   return 0; // great Success!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 }
 
 
@@ -140,16 +123,14 @@ int set_parent_id_to_IndexNode(BF_Block* block, int parent_block_id){
 }   
 
 int find_next_Node(BF_Block* block, int key) {
-    IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+   // briskei to swsto path gia ton epomeno index node
+   IndexNode* node = (IndexNode*)BF_Block_GetData(block);
 
    for (int i = 0; i < node->pointers_counter; i++) {
-      // Check if the key is less than or equal to the current key
       if (key < node->keys[i]) {
-         // Return the corresponding pointer
          return node->pointers[i];
       }
    }
-   // If the key is larger than all keys, return the last pointer
    return node->pointers[node->pointers_counter - 1];
 }
 

@@ -8,7 +8,7 @@
 #include "bp_indexnode.h"
 #include "record.h"
 
-#define RECORDS_NUM 100 // you can change it if you want
+#define RECORDS_NUM 200 // you can change it if you want
 #define FILE_NAME "data.db"
 
 #define CALL_OR_DIE(call)     \
@@ -30,7 +30,7 @@ int main()
 
   
   insertEntries();
-  //findEntries();
+  findEntries();
 
   ////////////////////////////////////////////////
   
@@ -43,41 +43,11 @@ void insertEntries(){
   BPLUS_INFO* info = BP_OpenFile(FILE_NAME, &file_desc);
   Record record;
   
-/*
-  //bazume riza einai 383 tha bei deksia
-  record = randomRecord(0);
-  int first_entry=record.id;
-  printf("First entry is: %d\n", first_entry);
-  first_entry = BP_InsertEntry(file_desc,info,record);
-  printf("\nFirst entry with id: %d, completed in block  with id :%d\n", record.id, first_entry);
 
-  //bazoume deftero record ( einai 783 tha bei deksia meta to proto)
-  record = randomRecord(0);
-  int second_entry=record.id;
-  printf("Second entry is: %d\n", second_entry);
-  second_entry = BP_InsertEntry(file_desc,info,record);
-  printf("\nSecond entry with id: %d , completed in block with id: %d\n", record.id , second_entry);
-
-  //bazoume trito gia na bei aristera
-  record = randomRecord(100);
-  int third_entry=record.id;
-  printf("Third entry is: %d\n", third_entry);
-  third_entry = BP_InsertEntry(file_desc,info,record);
-  printf("\nThird entry with id: %d , completed in block with id: %d\n", record.id , third_entry);
-
-  //bazoume tetarto gia na bei aristera meta to trito
-  record = randomRecord(150);
-  int fourth_entry=record.id;
-  printf("fourth entry is: %d\n", fourth_entry);
-  fourth_entry = BP_InsertEntry(file_desc,info,record);
-  printf("\nFourth entry with id: %d , completed in block with id: %d\n", record.id , fourth_entry);
-
-*/
-  for (int i = 1; i < 20; i++)
+  for (int i = 1; i < 200; i++)
   {
-    record = randomRecord(i);
+    record = randomRecord();
     int new_entry=record.id;
-    printf("New entry is: %d\n", new_entry);
     new_entry = BP_InsertEntry(file_desc,info,record);
     printf("\nNew entry with id: %d , completed in block with id: %d\n", record.id , new_entry);
     
@@ -89,13 +59,15 @@ void insertEntries(){
   BP_CloseFile(file_desc,info);
   BF_Close();
 }
-/*
+
+
 void findEntries(){
   int file_desc;
   BPLUS_INFO* info;
 
   BF_Init(LRU);
   info=BP_OpenFile(FILE_NAME, &file_desc);
+  printf("File desc = %d\n\n", file_desc);
 
   Record tmpRec;  //Αντί για malloc
   Record* result=&tmpRec;
@@ -109,4 +81,3 @@ void findEntries(){
   BP_CloseFile(file_desc,info);
   BF_Close();
 }
-*/

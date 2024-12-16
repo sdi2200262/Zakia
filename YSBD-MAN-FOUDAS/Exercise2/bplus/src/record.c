@@ -45,10 +45,9 @@ const char* cities[] = {
 
 static int id = 0;
 
-Record randomRecord(int i ){
+Record randomRecord(){
     Record record;
-    if (i==0){
-        // create a record
+         // create a record
         record.id = rand()%1000;
         int r = rand() % (sizeof(names) / sizeof(names[0]));
         memcpy(record.name, names[r], strlen(names[r]) + 1);
@@ -60,20 +59,6 @@ Record randomRecord(int i ){
         memcpy(record.city, cities[r], strlen(cities[r]) + 1);
         return record;
     }
-    else{
-         // create a record
-        record.id = rand()%100;
-        int r = rand() % (sizeof(names) / sizeof(names[0]));
-        memcpy(record.name, names[r], strlen(names[r]) + 1);
-        //
-        r = rand() %  (sizeof(surnames) / sizeof(surnames[0]));
-        memcpy(record.surname, surnames[r], strlen(surnames[r]) + 1);
-        //
-        r = rand() %  (sizeof(cities) / sizeof(cities[0]));
-        memcpy(record.city, cities[r], strlen(cities[r]) + 1);
-        return record;
-    }
-}
 
 void printRecord(Record record){
     printf("(%d,%s,%s,%s)\n",record.id,record.name,record.surname,record.city);

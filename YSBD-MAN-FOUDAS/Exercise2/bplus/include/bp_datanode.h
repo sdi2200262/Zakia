@@ -28,7 +28,7 @@ int insert_pointer_to_DataNode( BF_Block* block, int new_block_id );
 int set_parent_id_to_DataNode(BF_Block* block, int parent_block_id);
 int debug(BF_Block* block);
 int split_DataNode(int file_desc, BF_Block* block, int split_block_id, BF_Block* new_block, int* new_index_key, int* new_block_id,  Record rec);
-//int search_record(BF_Block *block, int id, Record **result);
+int search_record(BF_Block *block, int id, Record **result);
 
 
 #endif 

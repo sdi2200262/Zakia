@@ -1,4 +1,3 @@
-// File: bp_file.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +6,6 @@
 #include "bp_indexnode.h"
 #include "bp_datanode.h"
 
-// Global array to track open files
 #define MAXOPENFILES 20
 
 #define CALL_BF(call)         \
@@ -31,14 +29,12 @@ typedef struct {
 static OpenFileEntry open_files[MAXOPENFILES];
 
 
-// BP_CreateFile implementation
 int BP_CreateFile(char *fileName) {
 
     //arxikopoiise to array me ta openfiles
     //initOpenFilesArray();
 
 
-    // Try to create the file using BF level
     int file_desc;
     BF_Block *block;
     BF_Block_Init(&block);
@@ -56,6 +52,7 @@ int BP_CreateFile(char *fileName) {
     bplus_info->tree_height = -1;         // to dedro ine adeio - den uparxei riza
     bplus_info->file_desc = file_desc;  
     bplus_info->total_record_counter = 0;
+    bplus_info->root_block_id = -1;
 
     printf("Metadata block created\n");
     printf("tree_hight              initialized: %d\n", bplus_info->tree_height);
@@ -76,19 +73,16 @@ int BP_CreateFile(char *fileName) {
     return 0;
 }
 
-// BP_OpenFile implementation
 BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     
     // Anoigma arxeiou se epipedo Block
     BF_OpenFile(fileName, file_desc);
 
     
-    // Read first block (metadata)
     BF_Block *block;
     BF_Block_Init(&block);
     BF_GetBlock(*file_desc,0,block);
     
-    // Copy metadata
     BPLUS_INFO* bplus_info = malloc(sizeof(BPLUS_INFO));
     char* data = BF_Block_GetData(block);
     memcpy(bplus_info, data, sizeof(BPLUS_INFO));
@@ -101,7 +95,6 @@ BPLUS_INFO* BP_OpenFile(char *fileName, int *file_desc) {
     return bplus_info;
 }
 
-// BP_CloseFile implementation
 int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     
     BF_Block* block;
@@ -113,7 +106,6 @@ int BP_CloseFile(int file_desc, BPLUS_INFO* info) {
     BF_Block_Destroy(&block);
     free(info);
      
-    // Close file at BF level
     CALL_BF(BF_CloseFile(file_desc));
     printf("\nClosed File with file_desc: %d (BP_CloseFile works)\n", file_desc);
     return 0;
@@ -229,15 +221,13 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     //upoloipes periptoseis
     printf("\n--------------------------------------------------------\n");
-    
+    printf("\nNew entry is: %d\n\n", record.id);
+
     //ksekinodas apo tin riza tha broume to sosto node sto opoio prepei na ginei
     //eisagogi eggrafis
     int curr_block = bplus_info->root_block_id;
     int curr_level=0;
 
-    //gia debugging
-    
-    printf("\n\n");
     //perase apo olous tous index nodes sto sosto path
     while(curr_level < bplus_info->tree_height -1){
         
@@ -303,9 +293,8 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
                 BF_UnpinBlock(new_block);
                 BF_Block_Destroy(&block);
                 BF_Block_Destroy(&new_block);
-                // splitarisma
-            
-            return curr_block;
+
+                return curr_block;
             }
             if ( split == 1){
                 printf("\nto data node me id %d foulare\n", curr_block);
@@ -320,7 +309,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
                 BF_UnpinBlock(new_block);
                 BF_Block_Destroy(&block);
                 BF_Block_Destroy(&new_block);
-                // splitarisma
+                
             
             return new_block_id;
             }
@@ -329,14 +318,13 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
             }
 
         default:
-            // Handle other cases if needed
-            printf("Unhandled result: %d\n", result);
+            printf("\n");
             break;
     }
 
 
     bplus_info->total_record_counter++;
-
+    
     debug(block);
 
     BF_UnpinBlock(block);
@@ -345,48 +333,80 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
     return curr_block;
 }
+
+int BP_GetEntry(int file_desc, BPLUS_INFO* bplus_info, int id, Record** result) {
+    //  De doulevei
+    BF_Block* block;
+    BF_Block_Init(&block);
+
+    int curr_block = 0;
+    BF_GetBlock(file_desc, curr_block , block);
+    int curr_level = 0;
+
+    while (curr_level < bplus_info->tree_height - 1) {
+        
+        IndexNode* node = (IndexNode*)BF_Block_GetData(block);
+        int next;
+        for (int i = 0; i < node->pointers_counter; i++) {
+            if (id < node->keys[i]) {
+                next = node->pointers[i];
+                break;
+            }
+        }
+        next =  node->pointers[node->pointers_counter - 1];
+        BF_GetBlock(file_desc, next , block);
     
+        printf("%d \n", next);
+        curr_level++;
+    }
+    debug(block);
+    search_record(block , id , result);
+
+    BF_Block_SetDirty(block);
+    BF_UnpinBlock(block);
+    BF_Block_Destroy(&block);
+}
+
+
+/* BP Print sinarthsh gia ektypwsh periexomenwn twn data blocks meta to splittarisma */
 int BP_print(int file_desc, BPLUS_INFO* bplus_info) {
     int curr_block = bplus_info->root_block_id;
     int curr_level = 0;
 
-    // Traverse to the leftmost leaf node
+    // kanei traverse to dentro gia na ftasei sto pio aristera leaf tou pou einai
+    // to prwto data node
     while (curr_level < bplus_info->tree_height - 1) {
-        // Initialize a temporary block
         BF_Block* tmpblock;
         BF_Block_Init(&tmpblock);
         
         CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
 
-        // Find the leftmost pointer for the current index node
+        // klhsh sunartishs poy briskei to pio aristera leaf
         curr_block = find_leftest_Node(tmpblock);
 
         if (curr_block == -1) {
-            // Error in find_leftest_Node, terminate
             BF_Block_SetDirty(tmpblock);
             BF_UnpinBlock(tmpblock);
             BF_Block_Destroy(&tmpblock);
-            printf("Error: Failed to traverse to the leftmost node.\n");
             return -1;
         }
 
         curr_level++;
         
-        // Clean up the temporary block
+        // markarei to tmpblock ws dirty kai to kanei unpin k destroy gia na mh gemizei to buffer
         BF_Block_SetDirty(tmpblock);
         BF_UnpinBlock(tmpblock);
         BF_Block_Destroy(&tmpblock);
     }
 
-    // Print records from the leftmost data node
     BF_Block* tmpblock;
     BF_Block_Init(&tmpblock);
     CALL_BF(BF_GetBlock(file_desc, curr_block, tmpblock));
     
     DataNode* tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
-    printf("Block %d has: ",curr_block);
+    // Printarei ta dedomena kai ta block ids poy anoikei to kathe record(print mono to record.id)
+    printf("Block %3d has: ",curr_block);
 
-    // Traverse through the linked data nodes
     while (tmpnode->next_data_node != -1) {
     
         for (int i = 0; i < tmpnode->recs_counter; i++) {
@@ -394,67 +414,20 @@ int BP_print(int file_desc, BPLUS_INFO* bplus_info) {
         }
         int next = tmpnode->next_data_node;
         printf("\n");
-        printf("Block %d has: ", next);
-        // Move to the next data node
+        printf("Block %3d has: ", next);
         CALL_BF(BF_GetBlock(file_desc, next, tmpblock));
         tmpnode = (DataNode*)BF_Block_GetData(tmpblock);
     }
 
-    // Print records from the last data node
     for (int i = 0; i < tmpnode->recs_counter; i++) {
-        printf("%d ", tmpnode->recs[i].id);
+        printf("%3d ", tmpnode->recs[i].id);
     }
     printf("\n");
 
-    // Clean up
+    // katharismos block
     BF_Block_SetDirty(tmpblock);
     BF_UnpinBlock(tmpblock);
     BF_Block_Destroy(&tmpblock);
 
     return 0;
 }
-
-    
-
-
-/*
-// BP_GetEntry implementation
-int BP_GetEntry(int file_desc, BPLUS_INFO* header_info, int id, Record** result) {
-    // Start from root block
-    int current_block = header_info->root_block;
-    int level = 0;
-    
-    BF_Block *block;
-    BF_Block_Init(&block);
-    
-    // Traverse to leaf level
-    while (level < header_info->height - 1) {
-        if (BF_GetBlock(file_desc, current_block, block) != BF_OK) {
-            BF_Block_Destroy(&block);
-            *result = NULL;
-            return -1;
-        }
-        
-        // Find child block for this id
-        current_block = findChildBlockId(block, id);
-        BF_UnpinBlock(block);
-        level++;
-    }
-    
-    // At leaf level, get block
-    if (BF_GetBlock(file_desc, current_block, block) != BF_OK) {
-        BF_Block_Destroy(&block);
-        *result = NULL;
-        return -1;
-    }
-    
-    // Search for record in data node
-    int ret = findRecordInDataNode(block, id, result);
-    
-    // Unpin block
-    BF_UnpinBlock(block);
-    BF_Block_Destroy(&block);
-    
-    return ret;
-}
-*/
