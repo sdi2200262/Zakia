@@ -141,7 +141,7 @@ int find_leftest_Node(BF_Block* block) {
    return node->pointers[0];
 }
 
-
+/*
 int split_indexNode(int file_desc,BPLUS_INFO* bplus_info, BF_Block* block, int split_block_id, BF_Block* new_block, int* new_index_key, int* new_block_id, int key) 
 {
    IndexNode* old_node = (IndexNode*)BF_Block_GetData(block);
@@ -252,7 +252,7 @@ int split_indexNode(int file_desc,BPLUS_INFO* bplus_info, BF_Block* block, int s
    BF_Block_SetDirty(parent_block);
    BF_UnpinBlock(parent_block);
    BF_Block_Destroy(&parent_block);
-}
+}*/
 
  
 int debug_Index(BF_Block* block){

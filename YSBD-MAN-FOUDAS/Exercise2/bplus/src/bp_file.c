@@ -311,7 +311,7 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
             
             return new_block_id;
             }
-            else{
+            /*else{
                  BF_Block* new_block;
                 BF_Block_Init(&new_block);
                 CALL_BF(BF_AllocateBlock(file_desc, new_block));
@@ -321,10 +321,10 @@ int BP_InsertEntry(int file_desc, BPLUS_INFO* bplus_info, Record record) {
 
                 int result = split_indexNode(file_desc, bplus_info, block , split , new_block, &new_parent_index_key, &new_block_id,new_index_key);
                 if(result == 0){
-                    
-                }
 
-            }
+                }*/
+
+            //}
 
         default:
             printf("\n");
